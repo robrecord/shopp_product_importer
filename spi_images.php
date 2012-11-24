@@ -34,7 +34,7 @@ class spi_images {
 		return $images;
 	}
 
-	function import_product_images($product_id,$images) {
+	/* function import_product_images($product_id,$images) {
 		$spi_db = new spi_db($this->spi);
 		$process_count = 0;
 		foreach ($images as $img) {
@@ -67,7 +67,35 @@ class spi_images {
 		}	
 		unset($spi_db);
 		return $process_count;
-	}	
+	}	*/
+
+function import_product_images($product_id,$images) {
+		$spi_db = new spi_db($this->spi);
+		$process_count = 0;
+		foreach ($images as $img) {
+			$pathinfo = pathinfo($img);   
+
+			if (strtoupper($pathinfo['extension']) == 'JPG' || strtoupper($pathinfo['extension']) == 'JPEG' || strtoupper($pathinfo['extension']) == 'GIF' || strtoupper($pathinfo['extension']) == 'PNG') {
+				$image_exists = $this->image_exists($product_id, $pathinfo['basename']);
+				
+				if (isset($image_exists)) {
+					foreach ($image_exists as $image_to_delete) {
+						$this->delete_images($product_id, array($image_to_delete->id));
+						$this->spi->log("product ".$product_id."'s image deleted");
+						
+					}
+				}
+				
+				if ($this->spi->Shopp->Settings->get('catskin_importer_force_image_import') == 'yes' || !(count($this->image_exists($product_id, $pathinfo['basename'])) > 0)) {
+					$this->_load_image_from_url($product_id,$img);
+					$process_count++;
+				}
+			}
+			
+		}	
+		unset($spi_db);
+		return $process_count;
+	}
 
 	function _load_image_from_url($product_id,$img) {
 		global $Shopp;
