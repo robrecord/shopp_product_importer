@@ -8,13 +8,13 @@
 require_once('Image.php');
 require_once('spi_db.php');
 class spi_images {
-	
+
 	function spi_images($spi) {
 		$this->spi = $spi;
 		$this->image_put_path = $spi->image_put_path;
 		$this->image_map = $spi->image_map;
 	}
-	
+
 	function import_images($Product,$row) { // not used
 		if (is_array($this->image_map)) {
 		foreach ($this->image_map as $key ){
@@ -27,14 +27,13 @@ class spi_images {
 				if ($this->image_exists($Product->id, $pathinfo['basename']) != $Product->id)
 				 $this->load_image_from_url($Product,$img);
 			}
-			
+
 		}	
 		unset($spi_db);
 		}
 		return $images;
 	}
-	
-/*
+
 	function import_product_images($product_id,$images) {
 		$spi_db = new spi_db($this->spi);
 		$process_count = 0;
@@ -43,7 +42,7 @@ class spi_images {
 
 			if (strtoupper($pathinfo['extension']) == 'JPG' || strtoupper($pathinfo['extension']) == 'JPEG' || strtoupper($pathinfo['extension']) == 'GIF' || strtoupper($pathinfo['extension']) == 'PNG') {
 				//$image_exists = $this->image_exists($product_id, $pathinfo['basename']);
-				
+
 				//if (isset($image_exists)) {
 				//	foreach ($image_exists as $image_to_delete) {
 				//		$this->delete_images($product_id, array($image_to_delete->id));
@@ -64,50 +63,20 @@ class spi_images {
 					$process_count++;
 				}
 			}
-			
+
 		}	
 		unset($spi_db);
 		return $process_count;
 	}	
 
-*/
-function import_product_images($product_id,$images) {
-		$spi_db = new spi_db($this->spi);
-		$process_count = 0;
-		foreach ($images as $img) {
-			$pathinfo = pathinfo($img);   
-
-			if (strtoupper($pathinfo['extension']) == 'JPG' || strtoupper($pathinfo['extension']) == 'JPEG' || strtoupper($pathinfo['extension']) == 'GIF' || strtoupper($pathinfo['extension']) == 'PNG') {
-				$image_exists = $this->image_exists($product_id, $pathinfo['basename']);
-				
-				if (isset($image_exists)) {
-					foreach ($image_exists as $image_to_delete) {
-						$this->delete_images($product_id, array($image_to_delete->id));
-						$this->spi->log("product ".$product_id."'s image deleted");
-						
-					}
-				}
-				
-				if ($this->spi->Shopp->Settings->get('catskin_importer_force_image_import') == 'yes' || !(count($this->image_exists($product_id, $pathinfo['basename'])) > 0)) {
-					$this->_load_image_from_url($product_id,$img);
-					$process_count++;
-				}
-			}
-			
-		}	
-		unset($spi_db);
-		return $process_count;
-	}	
-
-	
 	function _load_image_from_url($product_id,$img) {
 		global $Shopp;
-		
+
 		$QualityValue = array(100,92,80,70,60);
 		$info = pathinfo($img);
 		// if (!$this->image_exists($product_id,$info['basename'])) {
 			// Generate Small Size
-		
+
 			$Image = new ProductImage();
 
 			$Image->parent = $product_id;
@@ -120,17 +89,17 @@ function import_product_images($product_id,$images) {
 			$Image->size = filesize($this->spi->csv_get_path.$info['basename']);
 			$Image->store(file_get_contents($this->spi->csv_get_path.$info['basename']));
 			$Image->save();
-			
+
 			do_action('add_product_download',$Image,$img);
-			
-				
+
+
 		// }
 	}	
 	function path_from_url($url)
 	{
 		if ( !defined('ABSPATH') )
 			define('ABSPATH', dirname(__FILE__) . '/');
-		
+
 		$url_parsed = parse_url($url);
 		$path = $url_parsed['path'];
 		$path = ABSPATH.$path;
@@ -147,7 +116,7 @@ function import_product_images($product_id,$images) {
 			$Product->save();
 			$this->spi->log("product ".$product_id."'s images (".implode(', ',$image_ids).") deleted");
 		}
-		
+
 	}	
 	function get_product_images($product_id) {
 		$Product = new Product($product_id);
@@ -159,7 +128,7 @@ function import_product_images($product_id,$images) {
 		$QualityValue = array(100,92,80,70,60);
 		$info = pathinfo($img);
 		if (!$this->image_exists($Product->id,$info['basename'])) {
-			
+
 			// Generate Small Size
 			$SmallSettings = array();
 			$SmallSettings['width'] = $Shopp->Settings->get('gallery_small_width');
@@ -173,7 +142,7 @@ function import_product_images($product_id,$images) {
 			$ThumbnailSettings['height'] = $Shopp->Settings->get('gallery_thumbnail_height');
 			$ThumbnailSettings['sizing'] = $Shopp->Settings->get('gallery_thumbnail_sizing');
 			$ThumbnailSettings['quality'] = $Shopp->Settings->get('gallery_thumbnail_quality');
-			
+
 			$parent = $Product->id;
 			$context = "product";
 			$Image = new ProductImage($Product->id); 
@@ -188,14 +157,14 @@ function import_product_images($product_id,$images) {
 				"mimetype" => image_type_to_mime_type($mimetype),
 				"attr" => $attr);
 
-			
+
 			if (!file_exists($this->image_put_path.$Image->name)) {
 				$_SESSION["spi_message"] = "Downloading image: ".$this->image_put_path.$Image->name;
 				$Image->data = addslashes(file_get_contents($img));
 			} else unset($Image->data);	
 			$Image->save();
 			unset($Image->data); // Save memory for small image & thumbnail processing
-				
+
 			$Small = new ProductImage($Product->id);
 			$Small->parent = $Image->parent;
 			$Small->context = $context;
@@ -220,7 +189,7 @@ function import_product_images($product_id,$images) {
 			unset($SmallSizing);
 			$Small->save();
 			unset($Small);
-			
+
 
 			if (SHOPP_VERSION >= '1.1') $Thumbnail = new FileAsset(); else $Thumbnail = new Asset();
 			$Thumbnail->parent = $Image->parent;
@@ -247,19 +216,19 @@ function import_product_images($product_id,$images) {
 			unset($Thumbnail->data);
 		}
 	}	
-		
+
 	function image_exists($parent, $name) {
 		global $wpdb;
-			
+
 		$query = "SELECT `value`, `id` from `{$wpdb->prefix}shopp_meta` WHERE `parent` = '{$parent}'";
-		
+
 		$results = $wpdb->get_results($query);
-		
+
 		foreach ($results as $result) {
 			$result_data = unserialize($result->value);
 			if (strpos($result_data->filename, $name) !== FALSE) $return[]=$result;
 		}
-		
+
 		$_SESSION["spi_error"] = $wpdb->last_error;
 		if (isset($return))	return $return;
 	}		
