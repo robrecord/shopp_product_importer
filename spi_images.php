@@ -1,6 +1,6 @@
 <?php 
 /**
-  	Copyright: Copyright © 2010 Catskin Studio
+  	Copyright: Copyright ï¿½ 2010 Catskin Studio
 	Licence: see index.php for full licence details
  */
 ?>
@@ -34,40 +34,7 @@ class spi_images {
 		return $images;
 	}
 
-	/* function import_product_images($product_id,$images) {
-		$spi_db = new spi_db($this->spi);
-		$process_count = 0;
-		foreach ($images as $img) {
-			$pathinfo = pathinfo($img);   
 
-			if (strtoupper($pathinfo['extension']) == 'JPG' || strtoupper($pathinfo['extension']) == 'JPEG' || strtoupper($pathinfo['extension']) == 'GIF' || strtoupper($pathinfo['extension']) == 'PNG') {
-				//$image_exists = $this->image_exists($product_id, $pathinfo['basename']);
-
-				//if (isset($image_exists)) {
-				//	foreach ($image_exists as $image_to_delete) {
-				//		$this->delete_images($product_id, array($image_to_delete->id));
-				//		
-				//		
-				//	}
-				//}
-				//var_dump($this->image_exists($product_id, $pathinfo['basename']));
-				if ($this->spi->Shopp->Settings->get('catskin_importer_force_image_import') == 'yes' || !(count($this->image_exists($product_id, $pathinfo['basename'])) > 0)) {
-					$images = $this->get_product_images($product_id);
-					if (!empty($images)) {
-						foreach ($images as $image) {
-							$image_ids[] = $image->id;
-						}
-						$this->delete_images($product_id, $image_ids);
-					}
-					$this->_load_image_from_url($product_id,$img);
-					$process_count++;
-				}
-			}
-
-		}	
-		unset($spi_db);
-		return $process_count;
-	}	*/
 
 function import_product_images($product_id,$images) {
 		$spi_db = new spi_db($this->spi);
