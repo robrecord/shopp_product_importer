@@ -44,8 +44,8 @@ class spi_images {
 				$image_exists = $this->image_exists($product_id, $pathinfo['basename']);
 				
 				if (isset($image_exists)) {
-					foreach ($image_exists as $image_to_delete) {
-						$this->delete_images($product_id, array($image_to_delete->id));
+					foreach ($image_exists as $image_to_delete) {
+						$this->delete_images($product_id, array($image_to_delete->id));
 					}
 				}
 				
