@@ -378,6 +378,8 @@ class shopp_product_importer {
 		// $ShoppAdmin->caps['importer-catmap'] = 'shopp-settings';
 		$ShoppAdmin->caps['importer-catmap'] = defined('SHOPP_USERLEVEL')?SHOPP_USERLEVEL:'read';
 		$ShoppAdmin->addpage('importer-catmap',__('Category Map','Shopp'),'MapCategories','Map EDGE category IDs to Shopp categories');
+		$ShoppAdmin->caps['importer-orderonly'] = defined('SHOPP_USERLEVEL')?SHOPP_USERLEVEL:'read';
+		$ShoppAdmin->addpage('importer-orderonly',__('Manage Order Only','Shopp'),'OrderOnly','Manage Order Only');
 		// $MapCategoriesMenu = add_submenu_page($ShoppMenu,'Category Map','Category Map', 'read', "shopp-importer-catmap", array(&$this,'shopp_importer_catmap_page'));
 		//
 	}
@@ -707,13 +709,20 @@ class shopp_product_importer {
 		$products_removed = extrapolate_result($this->result['products_removed']);
 		$products_updated = extrapolate_result($this->result['products_updated']);
 		
+		
 		if (!isset($this->result['edge_categories'])) $this->result['edge_categories'] = 0;
 		
 		foreach ($this->result as &$r) $r = (int)$r;
+		
+		$added_order_only = $this->result['added_to_order_only'] ? $this->result['added_to_order_only'] : 0;
+		$removed_order_only = $this->result['remove_from_order_only'] ? $this->result['remove_from_order_only'] : 0;
 
 		$result = <<<HTML
 Products Imported to database: {$products_imported}
 Products Updated: {$products_updated}
+
+Products added to Order Only: {$added_order_only}
+Products removed from Order Only: {$removed_order_only}
 
 Products Filtered due to missing image: {$_SESSION['spi_products_filtered_img']}
 Products Filtered due to disallowed category: {$_SESSION['spi_products_filtered_cat']}

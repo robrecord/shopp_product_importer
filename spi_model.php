@@ -33,11 +33,13 @@ class spi_model {
 	
 	
 	function spi_model($spi) {	
-		$this->spi = $spi;
-		$this->Shopp = $spi->Shopp;
-		//Is this used?
-		$this->cat_index = $this->get_next_shopp_category_id();  
-		$this->files = new spi_files($this->spi);  
+		if($spi){
+			$this->spi = $spi;
+			$this->Shopp = $spi->Shopp;
+			//Is this used?
+			$this->cat_index = $this->get_next_shopp_category_id();  
+			$this->files = new spi_files($this->spi);  
+		}
 	}
 	
 	// !bookmark : Execution Functions
@@ -277,18 +279,23 @@ class spi_model {
 		$this->spi->log($message);
 		
 		foreach ($this->products as $map_product) {     
-
+			if ($this->in_order_only_items($map_product->sku)){
+			
+				$this->delete_from_order_only($map_product->sku);
+				$this->spi->result['remove_from_order_only'] += 1;
+				
+			}else{
+				
 			if (strlen($map_product->description) > 0) {
 				$description = $spi_files->load_html_from_file($map_product->description); 
 			} else { 
 				$description = 	$map_product->description_text;
 			}
 			
-
 			if ($id = $this->product_exists($map_product->name,$map_product->sku)) {
 				// var_dump( $id, $map_product->sku );
 				$add_products = $this->update_product_sql($map_product,$description);
-				// var_dump( $add_products );
+				//var_dump( $add_products );
 				$update_products = $add_products + $update_products;
 			} else {
 				$insert_products[] = $this->create_product_sql($map_product,$description);
@@ -347,6 +354,7 @@ class spi_model {
 					}
 					$catalogs[] = $this->create_tag_catalog_sql($map_product,$tag,$used_tags);
 				}
+			}
 			}
 		}
 		unset($spi_files);
@@ -416,13 +424,71 @@ class spi_model {
 			$this->spi->result['specs'] = $this->chunk_query($specs,$query);
 		}
 		
-		foreach($_SESSION['spi_products_to_remove'] as $sku=>$name) {
-			$id = $this->product_exists($name,$sku);
-			if ($id && $this->remove_product_existing($id))
-				$this->spi->result['products_removed'][] = $sku;
-		}
+		$this->remove_products($_SESSION['spi_products_to_remove']);
+
 		
 		return $this->spi->result;
+	}	
+	
+	
+	function remove_products($items){
+
+		foreach($items as $sku=>$name) {
+			$pieces = explode("-", $sku);
+			$category = $pieces[1];
+			$testToKeep = $this->test_if_order_only_category($category);
+			
+			$id = $this->product_exists($name,$sku);
+			
+			if($testToKeep && $id){
+				
+				$this->insert_order_only_item($id, $name, $sku);
+
+			}elseif ($id && $this->remove_product_existing($id) && !$testToKeep){
+				
+				$this->spi->result['products_removed'][] = $sku;
+				
+			}
+				
+		}
+	}
+	
+	function insert_order_only_item($id, $name, $sku){
+	
+		if(!$this->in_order_only_items($sku)){
+	
+			global $wpdb;
+			$safename = str_replace("'", "''", $name);
+			$query = "INSERT INTO {$wpdb->prefix}shopp_order_only_items (id,name,sku) VALUES ({$id}, '{$safename}', '{$sku}')";
+			$added = $wpdb->query($query);
+			$this->spi->result['added_to_order_only'] += 1;
+		
+		}
+	
+	}
+	
+	function test_if_order_only_category($category)  {
+		global $wpdb;
+		$query = "SELECT 1 FROM {$wpdb->prefix}shopp_order_only_cats WHERE cat_id='{$category}'";
+		$result = $wpdb->query($query);
+		return $result;
+	}
+	
+	function delete_from_order_only($sku) {
+		global $wpdb;
+		$query = "DELETE FROM {$wpdb->prefix}shopp_order_only_items WHERE sku='{$sku}'";
+		$result = $wpdb->query($query);
+		$query = "DELETE FROM {$wpdb->prefix}shopp_importer WHERE spi_sku='{$sku}'";
+		$result = $wpdb->query($query);
+		return $result;
+	
+	}
+	
+	function in_order_only_items($sku){
+		global $wpdb;
+		$query = "SELECT 1 FROM {$wpdb->prefix}shopp_order_only_items WHERE sku='{$sku}'";
+		$result = $wpdb->query($query);
+		return $result;
 	}	
 	
 	function chunk_query($values,$query,$size=100)
@@ -824,7 +890,7 @@ class spi_model {
 					// var_dump($cat_array);
 					foreach ($cat_array as $index=>&$cats) {
 					if ($cats==array(0=>'')) echo "BAD";
-					$this->make_category(&$cats,&$cat_index,&$parent_index,&$csv_product_id,($edge?$index:null));
+					$this->make_category($cats,$cat_index,$parent_index,$csv_product_id,($edge?$index:null));
 					} 
 				}
 				unset ($cat_array,$cat_string,$edge);
@@ -1434,7 +1500,7 @@ class spi_model {
 	   				if (version_compare(PHP_VERSION, '5.3.0') >= 0) {
 	   					$this->_get_combos($lists,$result,$stack,$pos+1);
 	   				} else {
-	   					$this->_get_combos(&$lists,&$result,$stack,$pos+1);
+	   					$this->_get_combos($lists,$result,$stack,$pos+1);
 	   				}
 	   			}			 
 	   			array_pop($stack);
