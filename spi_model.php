@@ -279,6 +279,9 @@ class spi_model {
 		$this->spi->log($message);
 		
 		foreach ($this->products as $map_product) {     
+			
+			// If the item is in the order_only_items table already, we don't want to update
+			// or add, we just want to delete from that table since it is now in stock
 			if ($this->in_order_only_items($map_product->sku)){
 			
 				$this->delete_from_order_only($map_product->sku);
@@ -286,75 +289,75 @@ class spi_model {
 				
 			}else{
 				
-			if (strlen($map_product->description) > 0) {
-				$description = $spi_files->load_html_from_file($map_product->description); 
-			} else { 
-				$description = 	$map_product->description_text;
-			}
-			
-			if ($id = $this->product_exists($map_product->name,$map_product->sku)) {
-				// var_dump( $id, $map_product->sku );
-				$add_products = $this->update_product_sql($map_product,$description);
-				//var_dump( $add_products );
-				$update_products = $add_products + $update_products;
-			} else {
-				$insert_products[] = $this->create_product_sql($map_product,$description);
-				$this->spi->result['products'][] = $map_product->sku;
-			}
-			
-			foreach ($map_product->specs as $spec) $specs[] = $this->create_specs_sql($spec);
-
-			foreach ($map_product->prices as $price) {
-				$prices[] = $this->create_prices_sql($price);
-				if ($this->Shopp->Settings->get('catskin_importer_clear_prices') == 'yes') {
-					$result = $this->spi->truncate_prices_for_product($map_product->id);
-					// echo "clearing price lines for {$map_product->id}: $result\n";
+				if (strlen($map_product->description) > 0) {
+					$description = $spi_files->load_html_from_file($map_product->description); 
+				} else { 
+					$description = 	$map_product->description_text;
 				}
-			}
+				
+				if ($id = $this->product_exists($map_product->name,$map_product->sku)) {
+					// var_dump( $id, $map_product->sku );
+					$add_products = $this->update_product_sql($map_product,$description);
+					//var_dump( $add_products );
+					$update_products = $add_products + $update_products;
+				} else {
+					$insert_products[] = $this->create_product_sql($map_product,$description);
+					$this->spi->result['products'][] = $map_product->sku;
+				}
+				
+				foreach ($map_product->specs as $spec) $specs[] = $this->create_specs_sql($spec);
 
-			foreach ($this->categories as $id=>$category) {
-				$prefix = 'edge_';
-				if (!is_null($pos=strpos($id, $prefix)) ) { // if it's an edge category
-					if (is_null($category->exists)) {
-						$edge_index = substr($id, $pos+strlen($prefix));
-						if (!$edge_categories[$edge_index]) {
-							$edge_categories[$edge_index] = $this->create_category_sql($category);
-						}
+				foreach ($map_product->prices as $price) {
+					$prices[] = $this->create_prices_sql($price);
+					if ($this->Shopp->Settings->get('catskin_importer_clear_prices') == 'yes') {
+						$result = $this->spi->truncate_prices_for_product($map_product->id);
+						// echo "clearing price lines for {$map_product->id}: $result\n";
 					}
-					
-					foreach ($category->csv_product_ids as $csv_id) {
-						if ($csv_id == $map_product->csv_id) {
-							$edge_catalogs[] = $this->create_category_catalog_sql( $csv_id, $category->id );
+				}
+
+				foreach ($this->categories as $id=>$category) {
+					$prefix = 'edge_';
+					if (!is_null($pos=strpos($id, $prefix)) ) { // if it's an edge category
+						if (is_null($category->exists)) {
+							$edge_index = substr($id, $pos+strlen($prefix));
+							if (!$edge_categories[$edge_index]) {
+								$edge_categories[$edge_index] = $this->create_category_sql($category);
+							}
 						}
-					}	
-					
-				} elseif (in_array($map_product->csv_id,$category->csv_product_ids,true)) {
-					if (array_key_exists($category->id, $used_categories) === false && is_null($category->exists)) {
 						
-						$used_categories[$category->id] = $category->id;
-						$categories[] = $this->create_category_sql($category);
-						$next_category_id++;
-					} 
-					
-					foreach ($category->csv_product_ids as $csv_id) {
-						if ($csv_id == $map_product->csv_id) {
-							$catalogs[] = $this->create_category_catalog_sql( $csv_id, $category->id );
-						}
+						foreach ($category->csv_product_ids as $csv_id) {
+							if ($csv_id == $map_product->csv_id) {
+								$edge_catalogs[] = $this->create_category_catalog_sql( $csv_id, $category->id );
+							}
+						}	
+						
+					} elseif (in_array($map_product->csv_id,$category->csv_product_ids,true)) {
+						if (array_key_exists($category->id, $used_categories) === false && is_null($category->exists)) {
+							
+							$used_categories[$category->id] = $category->id;
+							$categories[] = $this->create_category_sql($category);
+							$next_category_id++;
+						} 
+						
+						foreach ($category->csv_product_ids as $csv_id) {
+							if ($csv_id == $map_product->csv_id) {
+								$catalogs[] = $this->create_category_catalog_sql( $csv_id, $category->id );
+							}
+						}	
 					}	
 				}	
-			}	
 
-			if (count($map_product->tags) > 0) {
-				foreach ($map_product->tags as $tag) {
-					$tag_value = htmlentities($tag->value, ENT_QUOTES, "UTF-8");
-					if (array_key_exists($tag_value, $used_tags) === false) {
-						$used_tags[$tag_value] = $next_tag_id;
-						$tags[] = $this->create_tags_sql($next_tag_id,$next_tag_id);
-						$next_tag_id++;
+				if (count($map_product->tags) > 0) {
+					foreach ($map_product->tags as $tag) {
+						$tag_value = htmlentities($tag->value, ENT_QUOTES, "UTF-8");
+						if (array_key_exists($tag_value, $used_tags) === false) {
+							$used_tags[$tag_value] = $next_tag_id;
+							$tags[] = $this->create_tags_sql($next_tag_id,$next_tag_id);
+							$next_tag_id++;
+						}
+						$catalogs[] = $this->create_tag_catalog_sql($map_product,$tag,$used_tags);
 					}
-					$catalogs[] = $this->create_tag_catalog_sql($map_product,$tag,$used_tags);
 				}
-			}
 			}
 		}
 		unset($spi_files);
@@ -444,7 +447,7 @@ class spi_model {
 				
 				$this->insert_order_only_item($id, $name, $sku);
 
-			}elseif ($id && $this->remove_product_existing($id) && !$testToKeep){
+			}elseif ($id && $this->remove_product_existing($id)){
 				
 				$this->spi->result['products_removed'][] = $sku;
 				
@@ -1736,6 +1739,8 @@ class spi_model {
 	function remove_product_existing($id) {
 		global $wpdb;
 		$id = trim($id);
+		$query = "DELETE FROM {$wpdb->prefix}shopp_catalog WHERE product = '{$id}'";
+		$result = $wpdb->query($query);
 		$query = "DELETE FROM {$wpdb->prefix}shopp_product WHERE id = '{$id}'";
 		$result = $wpdb->query($query);
 		$query = "DELETE FROM {$wpdb->prefix}shopp_price WHERE product = '{$id}'";
