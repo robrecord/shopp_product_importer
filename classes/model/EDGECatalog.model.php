@@ -15,14 +15,11 @@
 require_once("EDGECategory.model.php");
 
 class EDGECatalog extends Catalog {
-	
+
 	static $table = "edge_catalog";
 
-	function __construct ($type="catalog") {
-		global $Shopp;
-		$this->init(self::$table);
-		$this->type = $type;
-		$this->outofstock = ($Shopp->Settings->get('outofstock_catalog') == "on");
+	function __construct () {
+		parent::__construct();
 	}
 
 	/**
@@ -99,13 +96,13 @@ class EDGECatalog extends Catalog {
 
 		$query = "SELECT $columns FROM $category_table AS cat $joins $where GROUP BY cat.id ORDER BY cat.parent DESC,cat.priority,$orderby $order $limit";
 		$categories = $db->query($query,AS_ARRAY);
-		
 
-		// SELECT edge_cat.id,edge_cat.category,edge_cat.edge_category 
-		// FROM wp_shopp_edge_category_map AS edge_cat 
+
+		// SELECT edge_cat.id,edge_cat.category,edge_cat.edge_category
+		// FROM wp_shopp_edge_category_map AS edge_cat
 		// LEFT JOIN wp_shopp_category ON edge_cat.category=wp_shopp_category.id
-		// WHERE edge_category=990 
-		// GROUP BY edge_cat.id 
+		// WHERE edge_category=990
+		// GROUP BY edge_cat.id
 		// ORDER BY edge_cat.category DESC;
 
 		if (count($categories) > 1) $categories = sort_tree($categories, $parent);
@@ -160,7 +157,7 @@ class EDGECatalog extends Catalog {
 			$this->categories[$id]->shopp_categories = new stdClass();
 			$this->categories[$id]->shopp_categories->string = implode (', ',$shopp_category_array);
 			$this->categories[$id]->shopp_categories->categories = $shopp_category_array;
-			
+
 			$query = "SELECT product.id,product.name FROM $edge_catalog_table AS edge_cat LEFT JOIN $product_table AS product ON edge_cat.product=product.id WHERE parent={$category->id} ORDER BY product.id DESC $limit";
 			$products = $db->query($query,AS_ARRAY);
 			// $this->categories[$id]->products = $products;
@@ -169,7 +166,7 @@ class EDGECatalog extends Catalog {
 				// echo $product_id;
 				$this->categories[$id]->products[$product->id] = $product->name;
 			}
-			
+
 		}
 
 		if ($showsmart == "before" || $showsmart == "after")

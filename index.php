@@ -90,6 +90,10 @@ class shopp_product_importer {
 	public $debug = true;
 	public $auto_import = false;
 
+	public $class_path;
+	public $model_path;
+	public $flow_path;
+
 	function spi_errors($errno, $errstr,$errfile, $errline)
 	{
 		if (dirname($errfile)==dirname(__FILE__)) {
@@ -325,19 +329,21 @@ class shopp_product_importer {
 	}
 	function shopp_init()
 	{
-		require_once("{$this->basepath}/{$this->directory}/EDGECategory.model.php");
-		require_once("{$this->basepath}/{$this->directory}/EDGECatalog.model.php");
-		require_once("{$this->basepath}/{$this->directory}/EDGECatMap.model.php");
+		xdebug_break();
+		require_once("{$this->model_path}/EDGECategory.model.php");
+		require_once("{$this->model_path}/EDGECatalog.model.php");
+		require_once("{$this->model_path}/EDGECatMap.model.php");
 		// add_action('admin_menu', array(&$this, 'admin_menu'));
 		add_action('shopp_admin_menu', array(&$this, 'shopp_admin_menu'));
 
-		global $MapCategories;
+		// global $MapCategories;
+		// foreach (array('MapCategories', 'OrderOnly') as $controller) {
 		foreach (array('MapCategories') as $controller) {
-			$target = "{$this->basepath}/{$this->directory}/$controller.php";
+			$target = "{$this->flow_path}/$controller.php";
 			$link = SHOPP_FLOW_PATH."/$controller.php";
 			if (!file_exists($link)) symlink( $target,$link );
+			require_once($target);
 		}
-		require_once("{$this->basepath}/{$this->directory}/MapCategories.php");
 		// var_dump($MapCategories);
 	}
 
@@ -348,6 +354,9 @@ class shopp_product_importer {
 		$this->basepath = WP_PLUGIN_DIR;
 		$this->path = WP_PLUGIN_DIR . '/' . array_pop(explode('/',dirname(__FILE__)));
 		$this->directory = basename($this->path);
+		$this->class_path = "{$this->basepath}/{$this->directory}/classes";
+		$this->model_path = "{$this->class_path}/model";
+		$this->flow_path = "{$this->class_path}/flow";
 		$this->csv_upload_path = ABSPATH.'../wordpress2/edge3/';
 		$this->csv_get_path = WP_CONTENT_DIR.'/edge/';
 		$this->csv_archive_path = WP_CONTENT_DIR.'/import_archive/';
@@ -378,9 +387,10 @@ class shopp_product_importer {
 		$ShoppMenu = $ShoppAdmin->MainMenu; //this is our Shopp menu handle
 		// $ShoppAdmin->caps['importer-catmap'] = 'shopp-settings';
 		$ShoppAdmin->caps['importer-catmap'] = defined('SHOPP_USERLEVEL')?SHOPP_USERLEVEL:'read';
-		$ShoppAdmin->addpage('importer-catmap',__('Category Map','Shopp'),'MapCategories','Map EDGE category IDs to Shopp categories');
+		// !bookmark TODO addpage
+		// $ShoppAdmin->addpage('importer-catmap',__('Category Map','Shopp'),'MapCategories','Map EDGE category IDs to Shopp categories');
 		$ShoppAdmin->caps['importer-orderonly'] = defined('SHOPP_USERLEVEL')?SHOPP_USERLEVEL:'read';
-		$ShoppAdmin->addpage('importer-orderonly',__('Manage Order Only','Shopp'),'OrderOnly','Manage Order Only');
+		// $ShoppAdmin->addpage('importer-orderonly',__('Manage Order Only','Shopp'),'OrderOnly','Manage Order Only');
 		// $MapCategoriesMenu = add_submenu_page($ShoppMenu,'Category Map','Category Map', 'read', "shopp-importer-catmap", array(&$this,'shopp_importer_catmap_page'));
 		//
 	}
