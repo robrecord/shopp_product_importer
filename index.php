@@ -1,26 +1,15 @@
 <?php
 /**
-	Plugin Name: Shopp Product Importer v2
+	Plugin Name: Shopp Product Importer for EDGE
 	Plugin URI: http://www.catskinstudio.com
-	Version: 0.9.3
+	Version: 1.0
 	Description: Shopp Product Importer Shopp/Wordpress Plugin provides a mechanisim to import Products from a specifically formatted CSV file into the shopp product database.
-	Author: Lee Tagg (leet at catskinstudio dot com), fixed by Tim van den Eijnden (@timvdeijnden)
+	Author: Lee Tagg (leet at catskinstudio dot com), fixed by Tim van den Eijnden (@timvdeijnden), EDGE support & more by Rob Record (@robrecord)
 	Author URI: http://www.catskinstudio.com
 	Copyright: Copyright © 2010 Catskin Studio
 	Licence: GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007
 **/
-// xdebug_break();
 
-
-if (!function_exists("preprint")) {
-	function preprint($s, $return=false) {
-		$x = "<pre>";
-		$x .= print_r($s, 1);
-		$x .= "</pre>";
-		if ($return) return $x;
-		else print $x;
-	}
-}
 ini_set('memory_limit', 256*1024*1024);
 error_reporting(E_ERROR | E_WARNING | E_PARSE);
 // set_error_handler('shopp_product_importer::spi_errors');
@@ -150,8 +139,8 @@ class shopp_product_importer {
 			add_action('wp_ajax_next_image', array(&$this, 'ajax_next_image'));
 			set_error_handler(array(&$this, 'spi_errors'));
 			// $this->ajax_load_file();
+			add_action( 'init', array(&$this, 'register_edge_categories'));
 			add_action('shopp_init', array(&$this, 'shopp_init'));
-			add_action('shopp_loaded', array(&$this, 'shopp_loaded'));
 			add_action('shopp_auto_import', array(&$this, 'automatic_start'));
 
 			add_action('shopp_admin_menu', array(&$this, 'shopp_admin_menu'));
@@ -235,16 +224,14 @@ class shopp_product_importer {
 	}
 	function map_categories()
 	{
-		global $MapCategories;
-		set_error_handler(array(&$this, 'spi_errors'));
-		$this->shopp_init();
-		//
-		// require_once("{$this->basepath}/{$this->directory}/MapCategories.php");
-		$MapCategories = new MapCategories($this);
-		$result = $MapCategories->process_categories(true,false,$this);
-		$this->log($result);
-		if (!$this->auto_import) echo $result;
-
+		echo "Map EDGE Categories - TODO";
+		// global $MapCategories;
+		// set_error_handler(array(&$this, 'spi_errors'));
+		// $this->shopp_init();
+		// $MapCategories = new MapCategories($this);
+		// $result = $MapCategories->process_categories(true,false,$this);
+		// $this->log($result);
+		// if (!$this->auto_import) echo $result;
 	}
 	function find_csvs($dir)
 	{
@@ -323,29 +310,71 @@ class shopp_product_importer {
 		// if ($image_result == 'no-images' || $image_result == 'no-more' || !$image_result) $this->log('END');
 		// else $this->next_image();
 	}
-	function shopp_loaded()
-	{
 
-	}
 	function shopp_init()
 	{
-		xdebug_break();
-		require_once("{$this->model_path}/EDGECategory.model.php");
-		require_once("{$this->model_path}/EDGECatalog.model.php");
-		require_once("{$this->model_path}/EDGECatMap.model.php");
-		// add_action('admin_menu', array(&$this, 'admin_menu'));
 		add_action('shopp_admin_menu', array(&$this, 'shopp_admin_menu'));
 
-		// global $MapCategories;
 		// foreach (array('MapCategories', 'OrderOnly') as $controller) {
-		foreach (array('MapCategories') as $controller) {
-			$target = "{$this->flow_path}/$controller.php";
-			$link = SHOPP_FLOW_PATH."/$controller.php";
-			if (!file_exists($link)) symlink( $target,$link );
-			require_once($target);
-		}
-		// var_dump($MapCategories);
+		// 	$target = "{$this->flow_path}/$controller.php";
+		// 	$link = SHOPP_FLOW_PATH."/$controller.php";
+		// 	if (!file_exists($link)) symlink( $target,$link );
+		// 	require_once($target);
+		// }
 	}
+
+	public function register_edge_categories()
+	{
+		register_post_type( 'spi_edge_category',
+			array(
+				'labels' => array(
+					'name' => __( 'EDGE Category' ),
+					'singular_name' => __( 'EDGE Category' )
+				),
+			'public' => true,
+			'has_archive' => false,
+			)
+		);
+
+	}
+
+	// /**
+	//  * Add custom taxonomies
+	//  *
+	//  * Additional custom taxonomies can be defined here
+	//  * http://codex.wordpress.org/Function_Reference/register_taxonomy
+	//  */
+	// function add_custom_taxonomies() {
+	// 	// Add new "Locations" taxonomy to Posts
+	// 	register_taxonomy( 'edge_categories', 'product', array(
+	// 		// Hierarchical taxonomy (like categories)
+	// 		'hierarchical'		=> true,
+	// 		'public'            => true,
+	// 		'show_ui'           => true,
+	// 		'show_in_nav_menus' => true,
+	// 		'query_var'         => true,
+	// 		// This array of options controls the labels displayed in the WordPress Admin UI
+	// 		'labels' => array(
+	// 			'name' => _x( 'EDGE Categories', 'taxonomy general name' ),
+	// 			'singular_name' => _x( 'EDGE Category', 'taxonomy singular name' ),
+	// 			'search_items' =>  __( 'Search EDGE Categories' ),
+	// 			'all_items' => __( 'All EDGE Categories' ),
+	// 			'parent_item' => __( 'Parent EDGE Category' ),
+	// 			'parent_item_colon' => __( 'Parent EDGE Category:' ),
+	// 			'edit_item' => __( 'Edit EDGE Category' ),
+	// 			'update_item' => __( 'Update EDGE Category' ),
+	// 			'add_new_item' => __( 'Add New EDGE Category' ),
+	// 			'new_item_name' => __( 'New EDGE Category Name' ),
+	// 			'menu_name' => __( 'EDGE Categories' ),
+	// 		),
+	// 		// Control the slugs used for this taxonomy
+	// 		'rewrite' => array(
+	// 			'slug' => 'edge_categories', // This controls the base slug that will display before each term
+	// 			'with_front' => false, // Don't display the category base before "/edge_categories/"
+	// 			'hierarchical' => true // This will allow URL's like "/edge_categories/boston/cambridge/"
+	// 		),
+	// 	));
+	// }
 
 	function set_paths() {
 		if ( !defined('ABSPATH') )
@@ -383,25 +412,16 @@ class shopp_product_importer {
 	}
 	function shopp_admin_menu($ShoppAdmin)
 	{
-		global $MapCategoriesMenu;
 		$ShoppMenu = $ShoppAdmin->MainMenu; //this is our Shopp menu handle
-		// $ShoppAdmin->caps['importer-catmap'] = 'shopp-settings';
-		$ShoppAdmin->caps['importer-catmap'] = defined('SHOPP_USERLEVEL')?SHOPP_USERLEVEL:'read';
+		// $ShoppAdmin->caps['importer-catmap'] = defined('SHOPP_USERLEVEL')?SHOPP_USERLEVEL:'read';
 		// !bookmark TODO addpage
 		// $ShoppAdmin->addpage('importer-catmap',__('Category Map','Shopp'),'MapCategories','Map EDGE category IDs to Shopp categories');
 		$ShoppAdmin->caps['importer-orderonly'] = defined('SHOPP_USERLEVEL')?SHOPP_USERLEVEL:'read';
 		// $ShoppAdmin->addpage('importer-orderonly',__('Manage Order Only','Shopp'),'OrderOnly','Manage Order Only');
-		// $MapCategoriesMenu = add_submenu_page($ShoppMenu,'Category Map','Category Map', 'read', "shopp-importer-catmap", array(&$this,'shopp_importer_catmap_page'));
-		//
 	}
 
 	function admin_menu()
 	{
-		global $Shopp;
-		global $MapCategoriesMenu;
-		$ShoppMenu = $Shopp->Flow->Admin->MainMenu; //this is our Shopp menu handle
-		$MapCategoriesMenu = add_submenu_page($ShoppMenu,'Category Map','Category Map', 'read', "shopp-importer-catmap", array(&$this,'shopp_importer_catmap_page'));
-
 		$defaults = array(
 			'page' => false,
 			'id' => false
@@ -409,36 +429,9 @@ class shopp_product_importer {
 		$args = array_merge($defaults,$_REQUEST);
 		extract($args,EXTR_SKIP);
 
-		if (!defined('WP_ADMIN') || !isset($page)
-			|| $page != $ShoppAdmin->pagename('importer-catmap')
-			)
+		if ( !defined('WP_ADMIN') || !isset($page) )
 				return false;
-
-
-		$MapCategories = new MapCategories($this);
-
-		// var_dump($ShoppAdmin->Pages);
-		// $Shopp->Flow->Admin->Menus['shopp-catmap'] = 'shopp_page_shopp-importer-catmap';
-		// $Shopp->Flow->Admin->caps['catmap'] = 'shopp-catmap';
-		// $Shopp->Flow->Admin->Pages['shopp-catmap'] = new ShoppAdminPage('catmap','shopp-catmap','Category Map','../../../shopp_product_importer/MapCategories','Map EDGE category IDs to Shopp categories',false);
-		// var_dump($Shopp->Flow->Admin->Pages);
-
 	}
-
-	function shopp_importer_catmap_page()
-	{
-		global $MapCategories;
-		// var_dump($Shopp->Flow->Admin);die;
-		// check_admin_referer('wp_ajax_shopp_category_menu');
-		// echo $Shopp->Flow->Admin->pagename('importer-catmap');
-		// echo '<option value="">Select a category&hellip;</option>';
-		// echo '<option value="catalog-products">All Products</option>';
-		// echo $MapCategories->workflow();
-		echo $MapCategories->admin();
-		exit();
-
-	}
-
 
 	function recurse_array($id,$index) {
 		if ($parent = $this->shopp_categories[$id]->parent) {
