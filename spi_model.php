@@ -60,76 +60,71 @@ class spi_model {
 
 		// -1
 
-		while ($p_row = $this->get_next_product(0)) {
-			$p_set = $this->get_next_set($p_row->spi_id);
-			$this->filter_by_edge_category($p_row->spi_id);
-			$this->process_set($p_row->spi_id,-2);
+		$this->spi->log('Filtering products');
+		while ( $p_row = $this->get_next_product( 0 ) ) {
+			$this->filter_by_edge_category( $p_row->spi_id );
+			// $this->filter_by_inventory_status( $p_row->spi_id );
+			$this->filter_by_image_presence( $p_row->spi_id );
+			$this->process_set( $p_row->spi_id, 10 );
 		}
-		$this->spi->log(' execute-0',4);
 
-		while ($p_row = $this->get_next_product(-2)) {
-			$p_set = $this->get_next_set($p_row->spi_id);
-			$this->filter_by_inventory_status($p_row->spi_id);
-			$this->process_set($p_row->spi_id,-1);
-		}
-		$this->spi->log(' execute-1',4);
+		// //4 - Initialize Variations
+		// $this->spi->log('Processing products - Initialize Variations');
+		// $this->variations = array();
+		// while ( $p_row = $this->get_next_product( 10 ) ) {
+		// 	$this->initialize_variations( $p_row->spi_id );
+		// 	$this->process_set( $p_row->spi_id, 20 );
+		// }
 
-		while ($p_row = $this->get_next_product(-1)) {
-			$p_set = $this->get_next_set($p_row->spi_id);
-			$this->filter_by_image_presence($p_row->spi_id);
-			$this->process_set($p_row->spi_id,0);
-		}
-		$this->spi->log(' execute-2 Initialize Variations',4);
 
-		//0 - Initialize Variations
-		$this->variations = array();
-		while ($p_row = $this->get_next_product(0)) {
-			$p_set = $this->get_next_set($p_row->spi_id);
-			$this->initialize_variations($p_row->spi_id);
-			$this->process_set($p_row->spi_id,1);
-		}
-		$this->spi->log(' execute-3 Populate Variations',4);
-		//1 - Populate Variations
-		while ($p_row = $this->get_next_product(1)) {
-			$p_set = $this->get_next_set($p_row->spi_id);
-			$this->populate_variations($p_set);
-			$this->process_set($p_row->spi_id,2);
-		}
-		$this->spi->log(' execute-4 Initialize Categories',4);
+
+		// //1 - Populate Variations
+		// $this->spi->log('Processing products - Populate Variations');
+		// while ( $p_row = $this->get_next_product( 20 ) ) {
+		// 	$p_set = $this->get_next_set( $p_row->spi_id );
+		// 	$this->populate_variations( $p_set );
+		// 	$this->process_set( $p_row->spi_id, 30 );
+		// }
+
 		//2 - Initialize Categories
+		$this->spi->log('Processing products - Initialize Categories');
 		$this->categories = array();
-		while ($p_row = $this->get_next_product(2)) {
-			$p_set = $this->get_next_set($p_row->spi_id);
-			$this->initialize_categories($p_row->spi_id);
-			$this->process_set($p_row->spi_id,3);
+		while ( $p_row = $this->get_next_product( 10 ) ) {
+			$this->initialize_categories( $p_row->spi_id );
+			$this->process_set( $p_row->spi_id, 40 );
 		}
 		$this->spi->log('Cats to import '.count($this->categories));
-		$this->spi->log(' execute-5 Initialize Products',4);
+
+		die("OK");
+
+
 		//3 - Initialize Products
+		$this->spi->log('Processing products - Initialize Products');
 		$base_id = $this->get_next_shopp_product_id();
-		while ($p_row = $this->get_next_product(3)) {
-			$p_set = $this->get_next_set($p_row->spi_id);
+
+		while ( $p_row = $this->get_next_product( 40 ) ) {
+			$p_set = $this->get_next_set( $p_row->spi_id );
 			//Does the product already exist in shopp?
-			$existing_product = $this->product_exists($p_row->spi_name,$p_row->spi_sku);
+			$existing_product = $this->product_exists( $p_row->spi_name, $p_row->spi_sku );
 			if ($existing_product) {
 				$this->products[$existing_product] = new map_product();
 				$this->initialize_product( $this->products[$existing_product],$p_row->spi_id,$existing_product );
-				$this->process_set($p_row->spi_id,10,$existing_product);
+				$this->process_set($p_row->spi_id, 50, $existing_product);
 			} else {
 				$this->products[$base_id] = new map_product();
 				$this->initialize_product( $this->products[$base_id],$p_row->spi_id,$base_id);
-				$this->process_set($p_row->spi_id,10,$base_id);
+				$this->process_set($p_row->spi_id, 50, $base_id);
 				$base_id++;
 			}
 		}
-		$this->spi->log(' execute-6 Initialize Prices',4);
+		$this->spi->log('Processing products - Initialize Prices');
 		//10 - Initialize Prices
 		// if (!empty($this->products)) {
 			foreach ($this->products as $map_product) {
 				$this->initialize_prices($map_product);
 			}
-			$this->process_all(20);
-			$this->spi->log(' execute-end',4);
+			$this->process_all( 60 );
+			$this->spi->log(' execute-end');
 			return $this->products;
 		// } else echo('No products could be imported.<br>');
 	}
