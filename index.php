@@ -377,11 +377,11 @@ class shopp_product_importer {
 	}
 	function shopp_admin_menu($ShoppAdmin)
 	{
-		$ShoppMenu = $ShoppAdmin->MainMenu; //this is our Shopp menu handle
+		// $ShoppMenu = $ShoppAdmin->MainMenu; //this is our Shopp menu handle
 		// $ShoppAdmin->caps['importer-catmap'] = defined('SHOPP_USERLEVEL')?SHOPP_USERLEVEL:'read';
 		// !bookmark TODO addpage
 		// $ShoppAdmin->addpage('importer-catmap',__('Category Map','Shopp'),'MapCategories','Map EDGE category IDs to Shopp categories');
-		$ShoppAdmin->caps['importer-orderonly'] = defined('SHOPP_USERLEVEL')?SHOPP_USERLEVEL:'read';
+		// $ShoppAdmin->caps['importer-orderonly'] = defined('SHOPP_USERLEVEL')?SHOPP_USERLEVEL:'read';
 		// $ShoppAdmin->addpage('importer-orderonly',__('Manage Order Only','Shopp'),'OrderOnly','Manage Order Only');
 	}
 
