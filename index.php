@@ -895,21 +895,17 @@ HTML;
 
 	public function log($message,$level=4)
 	{
-		$message = "$message  ".$this->report_memory();
-		// if ($this->debug) echo "<p style='font-size:10px'>$message</p>";
-		if ($this->auto_import) {
-			$datetime = date('Y-m-d H:i:s');
-			$write = "$datetime - $message\n";
-			$fh = fopen( $_SERVER['DOCUMENT_ROOT']."/import.log", 'a') or die("can't open import.log");
-			fwrite($fh, $write); fclose($fh);
-		} else {
-			// error_log($message,$level);
-			$datetime = date('Y-m-d H:i:s');
-			$write = "$datetime - $message\n";
-			$fh = fopen( $_SERVER['DOCUMENT_ROOT']."/import_manual.log", 'a') or die("can't open import_manual.log");
-			fwrite($fh, $write); fclose($fh);
+		$log_name = ($this->auto_import) ? 'import.log' : 'import_manual.log';
+		$fh = fopen( "{$_SERVER['DOCUMENT_ROOT']}/$log_name", 'a' ) or die( "can't open $log_name" );
 
-		}
+		if( $this->Shopp->Settings->get( 'catskin_importer_debug_output' ) == 'yes' )
+			echo "$message<br>\n";
+
+		$message = "$message  ".$this->report_memory();
+
+		fwrite( $fh, date('Y-m-d H:i:s')." - $message\n" );
+		fclose( $fh );
+
 		return $message;
 
 	}
