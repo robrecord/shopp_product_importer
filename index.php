@@ -368,7 +368,7 @@ class shopp_product_importer {
 		}
 		if (SHOPP_VERSION >= '1.1') {
 			global $wp_importers;
-			register_importer("shopp_product_importer2","CSV Importer for Shopp Plugin 2","CSV Import for Shopp Plugin 2",array(&$this,'shopp_importer_settings_page'));
+			register_importer("shopp_product_importer","EDGE CSV to Shopp","Import <strong>Shopp products</strong> from an EDGE CSV file",array(&$this,'shopp_importer_settings_page'));
 			//exit("The Importers: ".print_r($wp_importers,true));
 		}
 		// var_dump($this->Shopp->Flow->Admin->Pages);
