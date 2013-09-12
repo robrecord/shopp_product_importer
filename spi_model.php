@@ -25,7 +25,7 @@ class spi_model {
 	var $global_spec_total = 0;
 
 	//Initialize Categories
-	var $cat_index = 0;
+	//var $cat_index = 0;
 	var $edge_cat_builder = array();
 
 	public $result = array();
@@ -37,7 +37,7 @@ class spi_model {
 			$this->spi = $spi;
 			$this->Shopp = $spi->Shopp;
 			//Is this used?
-			$this->cat_index = $this->get_next_shopp_category_id();
+			// $this->cat_index = $this->get_next_shopp_category_id();
 			$this->files = new spi_files($this->spi);
 		}
 	}
@@ -845,10 +845,8 @@ class spi_model {
 		}
 	}
 
-
-
 	function initialize_categories($csv_product_id) {
-		$cat_index = $this->cat_index;
+		// $cat_index = $this->cat_index;
 		$parent_index = 0;
 		$type=false;
 		$cat_array=array();
