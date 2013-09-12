@@ -338,44 +338,6 @@ class shopp_product_importer {
 
 	}
 
-	// /**
-	//  * Add custom taxonomies
-	//  *
-	//  * Additional custom taxonomies can be defined here
-	//  * http://codex.wordpress.org/Function_Reference/register_taxonomy
-	//  */
-	// function add_custom_taxonomies() {
-	// 	// Add new "Locations" taxonomy to Posts
-	// 	register_taxonomy( 'edge_categories', 'product', array(
-	// 		// Hierarchical taxonomy (like categories)
-	// 		'hierarchical'		=> true,
-	// 		'public'            => true,
-	// 		'show_ui'           => true,
-	// 		'show_in_nav_menus' => true,
-	// 		'query_var'         => true,
-	// 		// This array of options controls the labels displayed in the WordPress Admin UI
-	// 		'labels' => array(
-	// 			'name' => _x( 'EDGE Categories', 'taxonomy general name' ),
-	// 			'singular_name' => _x( 'EDGE Category', 'taxonomy singular name' ),
-	// 			'search_items' =>  __( 'Search EDGE Categories' ),
-	// 			'all_items' => __( 'All EDGE Categories' ),
-	// 			'parent_item' => __( 'Parent EDGE Category' ),
-	// 			'parent_item_colon' => __( 'Parent EDGE Category:' ),
-	// 			'edit_item' => __( 'Edit EDGE Category' ),
-	// 			'update_item' => __( 'Update EDGE Category' ),
-	// 			'add_new_item' => __( 'Add New EDGE Category' ),
-	// 			'new_item_name' => __( 'New EDGE Category Name' ),
-	// 			'menu_name' => __( 'EDGE Categories' ),
-	// 		),
-	// 		// Control the slugs used for this taxonomy
-	// 		'rewrite' => array(
-	// 			'slug' => 'edge_categories', // This controls the base slug that will display before each term
-	// 			'with_front' => false, // Don't display the category base before "/edge_categories/"
-	// 			'hierarchical' => true // This will allow URL's like "/edge_categories/boston/cambridge/"
-	// 		),
-	// 	));
-	// }
-
 	function set_paths() {
 		if ( !defined('ABSPATH') )
 			define('ABSPATH', dirname(__FILE__) . '/');
@@ -485,7 +447,6 @@ class shopp_product_importer {
 		// $this->ajax_load_file();
 		// $this->log(' ajax_load_file',4);
 		$this->truncate_all_prior_to_import();
-		$this->log('truncate_all_prior_to_import',4);
 		global $importing_now;
 		return true;
 	}
@@ -619,72 +580,84 @@ class shopp_product_importer {
 			$wpdb->show_errors();
 		}
 		$this->log(' ajax_import_csv',4);
-		if (!$this->column_map) $this->map_columns_from_saved_options();
-		// echo '<pre>'.print_r($this->column_map,1).'</pre>';
+		if ( !$this->column_map ) $this->map_columns_from_saved_options();
+
 		$this->ajax_load_file($filename);
-// $this->removed_products[]
 
 		// initialize importer table
-		$query = "  DROP TABLE IF EXISTS {$wpdb->prefix}shopp_importer; ";
-		$result = $wpdb->query($query);
+		$result = $wpdb->query( "DROP TABLE IF EXISTS {$wpdb->prefix}shopp_importer;" );
 
-		$query = "  CREATE TABLE {$wpdb->prefix}shopp_importer ( id INT NOT NULL AUTO_INCREMENT, PRIMARY KEY(id), product_id TEXT NULL, price_options TEXT NULL, price_optionkey TEXT NULL, price_label TEXT NULL, processing_status INT NULL DEFAULT 0 ";
-			foreach ($this->column_map as $key=>$value)
-			{
-				$query .= ", spi_" . $key . " TEXT NULL";
-			}
-		$query .= " ) ";
+		foreach ($this->column_map as $key=>$value)
+		{
+			$spi_query[] = "spi_{$key} TEXT NULL";
+		}
+		$spi_query = implode( ", \n", $spi_query );
+		$query = <<<SQL
+CREATE TABLE {$wpdb->prefix}shopp_importer
+(
+id					INT NOT NULL AUTO_INCREMENT, PRIMARY KEY(id),
+product_id			TEXT NULL,
+price_options		TEXT NULL,
+price_optionkey		TEXT NULL,
+price_label			TEXT NULL,
+processing_status	INT NULL DEFAULT 0,
+{$spi_query}
+);
+SQL;
 		$result = $wpdb->query($query);
-
-		// assemble query
-		$query = " INSERT INTO {$wpdb->prefix}shopp_importer (";
 
 		// assemble headers
-		$column_index = 0;
 		foreach ($this->column_map as $key=>$value) {
-			if ($column_index > 0) $query .= ", ";
-			$query .= " spi_" . $key . " ";
-			$column_index ++;
+			$query_headers[] = "spi_$key";
 		}
-		$query .= ") VALUES ";
+		$query_header_sql = implode( ', ', $query_headers );
 
-		$sql_beginning = $query;
+		// assemble query
+
 		// assemble data
-		for ($slice=0; $slice < count($this->examine_data); $slice+=30) {
-			$query = '';
-			foreach (array_slice($this->examine_data,$slice,30) as $row) {
-				$values = '';
-				foreach ($this->column_map as $key=>$value) {
-					if (strpos($key,'image')!==false) {
-						if ($this->Shopp->Settings->get('catskin_importer_remove_image_paths') == 'yes') { // removes paths.
-							foreach (array('\\','/') as $char)
-								if ($v=strrchr($row[$value],$char))
-									$row[$value] = substr($v,1);
-						}
-						$row[$value] = str_replace("%", "~", rawurlencode($row[$value]));
+		$chunk_size = 30;
+		for ( $slice = 0; $slice < count( $this->examine_data ); $slice += $chunk_size ) {
+			foreach( array_slice( $this->examine_data, $slice, $chunk_size ) as $row ) {
+				$values = array();
+				foreach( $this->column_map as $field_name => $column_id ) {
+					$value = $row[ $column_id ];
 
+					if( strpos( $field_name, 'image' ) !== false )
+					{
+						if( $this->Shopp->Settings->get( 'catskin_importer_remove_image_paths' ) == 'yes' )
+							$value = $this->remove_image_paths( $value );
+						$value = str_replace( "%", "~", rawurlencode( $value ) );
 					}
-					$row[$value] = $this->quote_smart($row[$value],$key);
-					$values .= ($values ? ', ' : '').$row[$value];
+					$value = $this->quote_smart( $value, $field_name );
+
+					$values[] = $value;
 				}
-				$query .= ($query ? ', ' : '')."($values)";
+				$rows[] = '( ' . implode( ', ', $values ) . ' )';
 			}
-			if (!empty($query)) {
-				$query = $sql_beginning.$query.'; ';
+			if (!empty($rows)) {
+				$query_values_sql = implode( ",\n\t", $rows );
+
+				$query = <<<SQL
+INSERT INTO {$wpdb->prefix}shopp_importer (
+	{$query_header_sql}
+) VALUES
+	{$query_values_sql};
+SQL;
 				$last_result = $result;
-				$result = $wpdb->query($query);
-				if (!($result > 0)) {
+				$result = $wpdb->query( $query );
+				if ( !( $result > 0 ) ) {
 					$message = "Error importing CSV file";
-					$this->log($message);
-					if (!$this->auto_import) {
+					$this->log( $message );
+					if ( !$this->auto_import ) {
 						echo "<h3>$message. Debug info below:</h3>";
-						var_dump($query,$row[$value],$this->column_map);
-						var_dump($result,array_slice($this->examine_data,$slice,1));
+						var_dump( $query, $row[$value], $this->column_map );
+						var_dump( $result, array_slice( $this->examine_data, $slice, 1 ));
 					}
-					if (!($last_result>0)) die;
+					if ( !( $last_result > 0 ) ) die;
 				}
 			}
 		}
+
 		// $this->map_columns_from_saved_options();
 		// $this->log(' map_columns_from_saved_options',4);
 		// $ajax_result = json_encode($result);
@@ -696,6 +669,7 @@ class shopp_product_importer {
 		if ($this->auto_import) return true;
 		exit;
 	}
+
 	function ajax_import_products() {
 		set_time_limit(24000);
 		global $wpdb, $Shopp;
@@ -705,7 +679,6 @@ class shopp_product_importer {
 		$model = new spi_model($this);
 		$model->execute();
 		$model->execute_mega_query();
-
 
 		function extrapolate_result(&$val, $total=null) {
 			$temp = count($val);
@@ -886,15 +859,20 @@ HTML;
 					case 'M':	// M    Missing
 					case 'U':	// U    Consumed as part (assembled into item or used in repair job)
 					default:
-						if ($this->Shopp->Settings->get('catskin_importer_empty_first') == 'no') {
-							$_SESSION['spi_products_to_remove'][$row[ $this->column_map['sku'] ]] = $row[ $this->column_map['name'] ]; // record lines to remove from DB
-						} else {
-							$_SESSION['spi_products_filtered_inv'][] = $csv_product_id; // or if starting from empty, log which were filtered out
+
+						if ( $this->Shopp->Settings->get('catskin_importer_empty_first') == 'no' )
+						{
+							// record lines to remove from DB
+							$_SESSION[ 'spi_products_to_remove' ][ $row[ $this->column_map[ 'sku' ] ] ] = $row[ $this->column_map[ 'name' ] ];
+						}
+						else
+						{
+							// or if starting from empty, log which were filtered out
+							$_SESSION[ 'spi_products_filtered_inv' ][] = $this->column_map[ 'sku' ];
 						}
 						unset($this->examine_data[$key]);
 					break;
 				}
-
 			}
 
 			// $this->log(' map_columns_from_saved_options',4);
@@ -1002,12 +980,26 @@ HTML;
 	}
 
 	function convert_bytes($size)
-	 {
-		$unit=array('b','kb','mb','gb','tb','pb');
-		return @round($size/pow(1024,($i=floor(log($size,1024)))),2).' '.$unit[$i];
-	 }
+	{
+		$unit = array( 'b', 'kb', 'mb', 'gb', 'tb', 'pb' );
+		return @round(
+				$size / pow(
+					1024,
+					( $i = floor(
+							log( $size, 1024 )
+						)
+					)
+				), 2
+			) . ' ' . $unit[ $i ];
+	}
 
-
+	function remove_image_paths( $value )
+	{
+		foreach( array( '\\', '/' ) as $char )
+			if( $v = strrchr( $value, $char ) )
+				$value = substr( $v, 1 );
+		return $value;
+	}
 }
 
 class shoppImporterException extends Exception
