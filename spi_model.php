@@ -1426,12 +1426,23 @@ class spi_model {
 		return null;
 	}
 
-	function category_exists($uri,$edge=true) {
+	function category_exists($uri, $edge=true) {
 		global $wpdb;
-		$edge = $edge ? '_edge' : '';
-			$query = "SELECT * FROM {$wpdb->prefix}shopp{$edge}_category WHERE uri = '{$uri}';";
-			// echo $query,$result;
-			$result = $wpdb->get_row($query);
+
+		if( $edge )
+		{
+ 			$args = array(
+				'name' => $uri,
+				'post_type' => 'shopp_edge_category',
+				'posts_per_page' => 1
+			);
+			$result = get_posts( $args );
+		}
+		else
+		{
+			$result = is_category( $uri );
+		}
+
 		return $result;
 	}
 
