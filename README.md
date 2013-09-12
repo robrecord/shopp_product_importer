@@ -2,11 +2,12 @@
 
 ### Wordpress plugin to import products into Shopp using CSV & image files.
 
-Customized for importing EDGE inventory tracking software's CSV exports.
+*Originally forked from Catskin Studios shopp_importer plugin*
 
-*Version: 1.0 - Compatible with Shopp up to version 1.1.9*
+Version: 1.0 - **Compatible with Shopp up to version 1.1.9**
 
-Originally forked from Catskin Studios shopp_importer plugin
+* Customized for importing EDGE inventory tracking software's CSV exports.
+
 
 ## Description
 
@@ -14,9 +15,9 @@ Shopp Product Importer Shopp/Wordpress Plugin provides a mechanisim to import Pr
 
 ## Authors
 
-* Originally developed by Lee Tagg http://www.catskinstudio.com
+* Originally developed by [Lee Tagg][http://www.catskinstudio.com]
 * Fixed by Tim van den Eijnden (@timvdeijnden)
-* EDGE support & more by Rob Record (@robrecord)
+* EDGE support & more by [Rob Record][http://robrecord.com] (@robrecord)
 
 * Copyright: Copyright © 2010 Catskin Studio
 * Licence: GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007
