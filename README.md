@@ -11,7 +11,7 @@ Version: 1.0 - **Compatible with Shopp up to version 1.1.9**
 
 ## Description
 
-Shopp Product Importer Shopp/Wordpress Plugin provides a mechanisim to import Products from a specifically formatted CSV file into the shopp product database.
+**Shopp Product Importer** Wordpress Plugin provides a mechanisim to import products from a specifically formatted CSV file into the Shopp product database.
 
 ## Authors
 
