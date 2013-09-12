@@ -15,9 +15,9 @@ Shopp Product Importer Shopp/Wordpress Plugin provides a mechanisim to import Pr
 
 ## Authors
 
-* Originally developed by [Lee Tagg][http://www.catskinstudio.com]
+* Originally developed by [Lee Tagg](http://www.catskinstudio.com)
 * Fixed by Tim van den Eijnden (@timvdeijnden)
-* EDGE support & more by [Rob Record][http://robrecord.com] (@robrecord)
+* EDGE support & more by [Rob Record](http://robrecord.com) (@robrecord)
 
 ### Legal
 
