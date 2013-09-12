@@ -386,11 +386,14 @@ class shopp_product_importer {
 		$this->class_path = "{$this->basepath}/{$this->directory}/classes";
 		$this->model_path = "{$this->class_path}/model";
 		$this->flow_path = "{$this->class_path}/flow";
-		$this->csv_upload_path = ABSPATH.'../wordpress2/edge3/';
-		$this->csv_get_path = WP_CONTENT_DIR.'/edge/';
-		$this->csv_archive_path = WP_CONTENT_DIR.'/import_archive/';
-		$this->html_get_path = WP_CONTENT_DIR.'/product_htmls/';
-		$this->image_put_path = WP_CONTENT_DIR.'/products/';
+		$this->csv_root = ABSPATH . $this->Shopp->Settings->get('catskin_importer_csv_directory') . '/';
+		// $this->csv_upload_path = ABSPATH.'../wordpress2/edge3/';
+		// $this->csv_get_path = WP_CONTENT_DIR.'/edge/';
+		$this->csv_get_path = $this->csv_root.'import/';
+		$this->csv_upload_path = $this->csv_root.'upload/';
+		$this->csv_archive_path = $this->csv_root.'archive/';
+		$this->html_get_path = $this->csv_root.'product_htmls/';
+		$this->image_put_path = $this->csv_root.'products/';
 	}
 
 	function on_admin_menu($args) {
@@ -487,9 +490,17 @@ class shopp_product_importer {
 		return true;
 	}
 
-	function display_setting($name,$text) {
+	function display_setting($name, $text) {
 		?>
-		<input type="hidden" name="settings[<?= $name ?>]" value="no" /><input type="checkbox" name="settings[<?= $name ?>]" value="yes" id="<?= $name ?>"<?php if ($this->Shopp->Settings->get($name) == "yes") echo ' checked="checked"'?> onchange="javascript:update_required();" /><label for="<?= $name ?>"> <?php _e($text,'Shopp'); ?></label><br />
+		<tr class="setting">
+			<td>
+				<label for="<?= $name ?>"> <?php _e($text,'Shopp'); ?></label>
+			</td>
+			<td>
+				<input type="hidden" name="settings[<?= $name ?>]" value="no" />
+				<input type="checkbox" name="settings[<?= $name ?>]" value="yes" id="<?= $name ?>"<?php if ($this->Shopp->Settings->get($name) == "yes") echo ' checked="checked"'?> onchange="update_required()" />
+			</td>
+		</tr>
 		<?
 	}
 
