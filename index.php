@@ -122,7 +122,7 @@ class shopp_product_importer {
 	function __construct() {
 		global $Shopp;
 		if (class_exists('Shopp')) {
-			$this->Shopp = $Shopp;
+			$this->Shopp = &$Shopp;
 			$this->set_paths();
 
 			/* The activation hook is executed when the plugin is activated. */
