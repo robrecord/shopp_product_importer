@@ -1,26 +1,15 @@
 <?php
 /**
-	Plugin Name: Shopp Product Importer v2
+	Plugin Name: Shopp Product Importer for EDGE
 	Plugin URI: http://www.catskinstudio.com
-	Version: 0.9.3
+	Version: 1.0
 	Description: Shopp Product Importer Shopp/Wordpress Plugin provides a mechanisim to import Products from a specifically formatted CSV file into the shopp product database.
-	Author: Lee Tagg (leet at catskinstudio dot com), fixed by Tim van den Eijnden (@timvdeijnden)
+	Author: Lee Tagg (leet at catskinstudio dot com), fixed by Tim van den Eijnden (@timvdeijnden), EDGE support & more by Rob Record (@robrecord)
 	Author URI: http://www.catskinstudio.com
 	Copyright: Copyright © 2010 Catskin Studio
 	Licence: GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007
 **/
-// xdebug_break();
 
-
-if (!function_exists("preprint")) {
-	function preprint($s, $return=false) {
-		$x = "<pre>";
-		$x .= print_r($s, 1);
-		$x .= "</pre>";
-		if ($return) return $x;
-		else print $x;
-	}
-}
 ini_set('memory_limit', 256*1024*1024);
 error_reporting(E_ERROR | E_WARNING | E_PARSE);
 // set_error_handler('shopp_product_importer::spi_errors');
@@ -133,7 +122,7 @@ class shopp_product_importer {
 	function __construct() {
 		global $Shopp;
 		if (class_exists('Shopp')) {
-			$this->Shopp = $Shopp;
+			$this->Shopp = &$Shopp;
 			$this->set_paths();
 
 			/* The activation hook is executed when the plugin is activated. */
@@ -150,8 +139,8 @@ class shopp_product_importer {
 			add_action('wp_ajax_next_image', array(&$this, 'ajax_next_image'));
 			set_error_handler(array(&$this, 'spi_errors'));
 			// $this->ajax_load_file();
+			add_action( 'init', array(&$this, 'register_edge_categories'));
 			add_action('shopp_init', array(&$this, 'shopp_init'));
-			add_action('shopp_loaded', array(&$this, 'shopp_loaded'));
 			add_action('shopp_auto_import', array(&$this, 'automatic_start'));
 
 			add_action('shopp_admin_menu', array(&$this, 'shopp_admin_menu'));
@@ -235,16 +224,14 @@ class shopp_product_importer {
 	}
 	function map_categories()
 	{
-		global $MapCategories;
-		set_error_handler(array(&$this, 'spi_errors'));
-		$this->shopp_init();
-		//
-		// require_once("{$this->basepath}/{$this->directory}/MapCategories.php");
-		$MapCategories = new MapCategories($this);
-		$result = $MapCategories->process_categories(true,false,$this);
-		$this->log($result);
-		if (!$this->auto_import) echo $result;
-
+		echo "Map EDGE Categories - TODO";
+		// global $MapCategories;
+		// set_error_handler(array(&$this, 'spi_errors'));
+		// $this->shopp_init();
+		// $MapCategories = new MapCategories($this);
+		// $result = $MapCategories->process_categories(true,false,$this);
+		// $this->log($result);
+		// if (!$this->auto_import) echo $result;
 	}
 	function find_csvs($dir)
 	{
@@ -323,28 +310,32 @@ class shopp_product_importer {
 		// if ($image_result == 'no-images' || $image_result == 'no-more' || !$image_result) $this->log('END');
 		// else $this->next_image();
 	}
-	function shopp_loaded()
-	{
 
-	}
 	function shopp_init()
 	{
-		xdebug_break();
-		require_once("{$this->model_path}/EDGECategory.model.php");
-		require_once("{$this->model_path}/EDGECatalog.model.php");
-		require_once("{$this->model_path}/EDGECatMap.model.php");
-		// add_action('admin_menu', array(&$this, 'admin_menu'));
 		add_action('shopp_admin_menu', array(&$this, 'shopp_admin_menu'));
 
-		// global $MapCategories;
 		// foreach (array('MapCategories', 'OrderOnly') as $controller) {
-		foreach (array('MapCategories') as $controller) {
-			$target = "{$this->flow_path}/$controller.php";
-			$link = SHOPP_FLOW_PATH."/$controller.php";
-			if (!file_exists($link)) symlink( $target,$link );
-			require_once($target);
-		}
-		// var_dump($MapCategories);
+		// 	$target = "{$this->flow_path}/$controller.php";
+		// 	$link = SHOPP_FLOW_PATH."/$controller.php";
+		// 	if (!file_exists($link)) symlink( $target,$link );
+		// 	require_once($target);
+		// }
+	}
+
+	public function register_edge_categories()
+	{
+		register_post_type( 'spi_edge_category',
+			array(
+				'labels' => array(
+					'name' => __( 'EDGE Category' ),
+					'singular_name' => __( 'EDGE Category' )
+				),
+			'public' => true,
+			'has_archive' => false,
+			)
+		);
+
 	}
 
 	function set_paths() {
@@ -357,11 +348,14 @@ class shopp_product_importer {
 		$this->class_path = "{$this->basepath}/{$this->directory}/classes";
 		$this->model_path = "{$this->class_path}/model";
 		$this->flow_path = "{$this->class_path}/flow";
-		$this->csv_upload_path = ABSPATH.'../wordpress2/edge3/';
-		$this->csv_get_path = WP_CONTENT_DIR.'/edge/';
-		$this->csv_archive_path = WP_CONTENT_DIR.'/import_archive/';
-		$this->html_get_path = WP_CONTENT_DIR.'/product_htmls/';
-		$this->image_put_path = WP_CONTENT_DIR.'/products/';
+		$this->csv_root = ABSPATH . $this->Shopp->Settings->get('catskin_importer_csv_directory') . '/';
+		// $this->csv_upload_path = ABSPATH.'../wordpress2/edge3/';
+		// $this->csv_get_path = WP_CONTENT_DIR.'/edge/';
+		$this->csv_get_path = $this->csv_root.'import/';
+		$this->csv_upload_path = $this->csv_root.'upload/';
+		$this->csv_archive_path = $this->csv_root.'archive/';
+		$this->html_get_path = $this->csv_root.'product_htmls/';
+		$this->image_put_path = $this->csv_root.'products/';
 	}
 
 	function on_admin_menu($args) {
@@ -374,7 +368,7 @@ class shopp_product_importer {
 		}
 		if (SHOPP_VERSION >= '1.1') {
 			global $wp_importers;
-			register_importer("shopp_product_importer2","CSV Importer for Shopp Plugin 2","CSV Import for Shopp Plugin 2",array(&$this,'shopp_importer_settings_page'));
+			register_importer("shopp_product_importer","EDGE CSV to Shopp","Import <strong>Shopp products</strong> from an EDGE CSV file",array(&$this,'shopp_importer_settings_page'));
 			//exit("The Importers: ".print_r($wp_importers,true));
 		}
 		// var_dump($this->Shopp->Flow->Admin->Pages);
@@ -383,25 +377,16 @@ class shopp_product_importer {
 	}
 	function shopp_admin_menu($ShoppAdmin)
 	{
-		global $MapCategoriesMenu;
-		$ShoppMenu = $ShoppAdmin->MainMenu; //this is our Shopp menu handle
-		// $ShoppAdmin->caps['importer-catmap'] = 'shopp-settings';
-		$ShoppAdmin->caps['importer-catmap'] = defined('SHOPP_USERLEVEL')?SHOPP_USERLEVEL:'read';
+		// $ShoppMenu = $ShoppAdmin->MainMenu; //this is our Shopp menu handle
+		// $ShoppAdmin->caps['importer-catmap'] = defined('SHOPP_USERLEVEL')?SHOPP_USERLEVEL:'read';
 		// !bookmark TODO addpage
 		// $ShoppAdmin->addpage('importer-catmap',__('Category Map','Shopp'),'MapCategories','Map EDGE category IDs to Shopp categories');
-		$ShoppAdmin->caps['importer-orderonly'] = defined('SHOPP_USERLEVEL')?SHOPP_USERLEVEL:'read';
+		// $ShoppAdmin->caps['importer-orderonly'] = defined('SHOPP_USERLEVEL')?SHOPP_USERLEVEL:'read';
 		// $ShoppAdmin->addpage('importer-orderonly',__('Manage Order Only','Shopp'),'OrderOnly','Manage Order Only');
-		// $MapCategoriesMenu = add_submenu_page($ShoppMenu,'Category Map','Category Map', 'read', "shopp-importer-catmap", array(&$this,'shopp_importer_catmap_page'));
-		//
 	}
 
 	function admin_menu()
 	{
-		global $Shopp;
-		global $MapCategoriesMenu;
-		$ShoppMenu = $Shopp->Flow->Admin->MainMenu; //this is our Shopp menu handle
-		$MapCategoriesMenu = add_submenu_page($ShoppMenu,'Category Map','Category Map', 'read', "shopp-importer-catmap", array(&$this,'shopp_importer_catmap_page'));
-
 		$defaults = array(
 			'page' => false,
 			'id' => false
@@ -409,36 +394,9 @@ class shopp_product_importer {
 		$args = array_merge($defaults,$_REQUEST);
 		extract($args,EXTR_SKIP);
 
-		if (!defined('WP_ADMIN') || !isset($page)
-			|| $page != $ShoppAdmin->pagename('importer-catmap')
-			)
+		if ( !defined('WP_ADMIN') || !isset($page) )
 				return false;
-
-
-		$MapCategories = new MapCategories($this);
-
-		// var_dump($ShoppAdmin->Pages);
-		// $Shopp->Flow->Admin->Menus['shopp-catmap'] = 'shopp_page_shopp-importer-catmap';
-		// $Shopp->Flow->Admin->caps['catmap'] = 'shopp-catmap';
-		// $Shopp->Flow->Admin->Pages['shopp-catmap'] = new ShoppAdminPage('catmap','shopp-catmap','Category Map','../../../shopp_product_importer/MapCategories','Map EDGE category IDs to Shopp categories',false);
-		// var_dump($Shopp->Flow->Admin->Pages);
-
 	}
-
-	function shopp_importer_catmap_page()
-	{
-		global $MapCategories;
-		// var_dump($Shopp->Flow->Admin);die;
-		// check_admin_referer('wp_ajax_shopp_category_menu');
-		// echo $Shopp->Flow->Admin->pagename('importer-catmap');
-		// echo '<option value="">Select a category&hellip;</option>';
-		// echo '<option value="catalog-products">All Products</option>';
-		// echo $MapCategories->workflow();
-		echo $MapCategories->admin();
-		exit();
-
-	}
-
 
 	function recurse_array($id,$index) {
 		if ($parent = $this->shopp_categories[$id]->parent) {
@@ -489,93 +447,48 @@ class shopp_product_importer {
 		// $this->ajax_load_file();
 		// $this->log(' ajax_load_file',4);
 		$this->truncate_all_prior_to_import();
-		$this->log('truncate_all_prior_to_import',4);
 		global $importing_now;
 		return true;
 	}
 
-	function display_setting($name,$text) {
+	function display_setting($name, $text) {
 		?>
-		<input type="hidden" name="settings[<?= $name ?>]" value="no" /><input type="checkbox" name="settings[<?= $name ?>]" value="yes" id="<?= $name ?>"<?php if ($this->Shopp->Settings->get($name) == "yes") echo ' checked="checked"'?> onchange="javascript:update_required();" /><label for="<?= $name ?>"> <?php _e($text,'Shopp'); ?></label><br />
+		<tr class="setting">
+			<td>
+				<label for="<?= $name ?>"> <?php _e($text,'Shopp'); ?></label>
+			</td>
+			<td>
+				<input type="hidden" name="settings[<?= $name ?>]" value="no" />
+				<input type="checkbox" name="settings[<?= $name ?>]" value="yes" id="<?= $name ?>"<?php if ($this->Shopp->Settings->get($name) == "yes") echo ' checked="checked"'?> onchange="update_required()" />
+			</td>
+		</tr>
 		<?
 	}
 
-
 	function truncate_all_prior_to_import() {
-		$this->log('truncate_all_prior_to_import');
-		global $wpdb;
+
 		if ($this->Shopp->Settings->get('catskin_importer_empty_first') == 'yes') {
-			$query = "	TRUNCATE TABLE wp_shopp_tag;";
-			$result = $wpdb->query($query);
-			$query = "	TRUNCATE TABLE wp_shopp_price;";
-			$result = $wpdb->query($query);
-			$query = "	TRUNCATE TABLE wp_shopp_product;";
-			$result = $wpdb->query($query);
-			$query = "	TRUNCATE TABLE wp_shopp_catalog;";
-			$result = $wpdb->query($query);
-			$query = "	TRUNCATE TABLE wp_shopp_edge_catalog;";
-			$result = $wpdb->query($query);
-			$query = "	TRUNCATE TABLE wp_shopp_asset;";
-			$result = $wpdb->query($query);
-			$query = "	DELETE FROM wp_shopp_meta WHERE type='spec' OR type='image';";
-			$result = $wpdb->query($query);
-		}
-
-		$query = " CREATE TABLE IF NOT EXISTS `{$wpdb->prefix}shopp_edge_category` (
-		  `id` bigint(20) unsigned NOT NULL,
-		  `parent` bigint(20) unsigned NOT NULL DEFAULT '0',
-		  `name` varchar(255) NOT NULL DEFAULT '',
-		  `slug` varchar(64) NOT NULL DEFAULT '',
-		  `uri` varchar(255) NOT NULL DEFAULT '',
-		  `description` text NOT NULL,
-		  `spectemplate` enum('off','on') NOT NULL,
-		  `facetedmenus` enum('off','on') NOT NULL,
-		  `variations` enum('off','on') NOT NULL,
-		  `pricerange` enum('disabled','auto','custom') NOT NULL,
-		  `priceranges` text NOT NULL,
-		  `specs` text NOT NULL,
-		  `options` text NOT NULL,
-		  `prices` text NOT NULL,
-		  `priority` int(10) NOT NULL DEFAULT '0',
-		  `created` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
-		  `modified` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
-		  PRIMARY KEY (`id`),
-		  KEY `parent` (`parent`)
-		); ";
-		$result = $wpdb->query($query);
-
-		$query = " CREATE TABLE IF NOT EXISTS `{$wpdb->prefix}shopp_edge_catalog` (
-		  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-		  `product` bigint(20) unsigned NOT NULL DEFAULT '0',
-		  `parent` bigint(20) unsigned NOT NULL DEFAULT '0',
-		  `type` enum('category','tag') NOT NULL,
-		  `priority` int(10) NOT NULL DEFAULT '0',
-		  `created` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
-		  `modified` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
-		  PRIMARY KEY (`id`),
-		  KEY `product` (`product`),
-		  KEY `assignment` (`parent`,`type`)
-		);";
-		$result = $wpdb->query($query);
-
-		$query = " CREATE TABLE IF NOT EXISTS `{$wpdb->prefix}shopp_edge_category_map` (
-		  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-		  `category` bigint(20) unsigned NOT NULL DEFAULT '0',
-		  `edge_category` bigint(20) unsigned NOT NULL DEFAULT '0',
-		  `created` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
-		  `modified` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
-		  PRIMARY KEY (`id`),
-		  KEY `product` (`category`),
-		  KEY `assignment` (`edge_category`)
-		);";
-		$result = $wpdb->query($query);
-
-		if ($this->Shopp->Settings->get('catskin_importer_clear_categories') == 'yes') {
-			// $query = "	TRUNCATE TABLE wp_shopp_category;";
-			// $result = $wpdb->query($query);
-			$query = "	TRUNCATE TABLE wp_shopp_edge_category;";
-			$result = $wpdb->query($query);
-
+			global $wpdb;
+			while( count( $shopp_product_posts = get_posts( array(
+				'post_type'        => 'shopp_product',
+				'post_status'      => 'any',
+				'suppress_filters' => true,
+				'posts_per_page'   => 100,
+			) ) ) > 0 )
+			{
+				foreach( $shopp_product_posts as $product )
+					wp_delete_post( $product->ID, true );
+			}
+			foreach( array(
+					'wp_shopp_index',
+					'wp_shopp_price',
+					'wp_shopp_asset',
+					'wp_shopp_summary',
+				) as $table )
+			{
+				$wpdb->query( "TRUNCATE TABLE $table;" );
+			}
+			$wpdb->query( "DELETE FROM wp_shopp_meta WHERE type='spec' OR type='image' OR type='meta';" );
 		}
 	}
 
@@ -591,8 +504,10 @@ class shopp_product_importer {
 	function truncate_prices_for_product($product_id) {
 		global $wpdb;
 		if ($this->Shopp->Settings->get('catskin_importer_clear_prices') == 'yes') {
-			$query = " DELETE FROM wp_shopp_price WHERE product='{$product_id}'";
-			$result = $wpdb->get_var($query);
+			$result = $wpdb->get_var( "DELETE FROM wp_shopp_price WHERE product='{$product_id}'" );
+			var_dump($result);
+			echo "remove meta too - TODO";
+			//$result = $wpdb->get_var( "DELETE FROM wp_shopp_meta WHERE context='price' AND parent='{$result}'" );
 		}
 		return $result;
 	}
@@ -615,72 +530,84 @@ class shopp_product_importer {
 			$wpdb->show_errors();
 		}
 		$this->log(' ajax_import_csv',4);
-		if (!$this->column_map) $this->map_columns_from_saved_options();
-		// echo '<pre>'.print_r($this->column_map,1).'</pre>';
+		if ( !$this->column_map ) $this->map_columns_from_saved_options();
+
 		$this->ajax_load_file($filename);
-// $this->removed_products[]
 
 		// initialize importer table
-		$query = "  DROP TABLE IF EXISTS {$wpdb->prefix}shopp_importer; ";
-		$result = $wpdb->query($query);
+		$result = $wpdb->query( "DROP TABLE IF EXISTS {$wpdb->prefix}shopp_importer;" );
 
-		$query = "  CREATE TABLE {$wpdb->prefix}shopp_importer ( id INT NOT NULL AUTO_INCREMENT, PRIMARY KEY(id), product_id TEXT NULL, price_options TEXT NULL, price_optionkey TEXT NULL, price_label TEXT NULL, processing_status INT NULL DEFAULT 0 ";
-			foreach ($this->column_map as $key=>$value)
-			{
-				$query .= ", spi_" . $key . " TEXT NULL";
-			}
-		$query .= " ) ";
+		foreach ($this->column_map as $key=>$value)
+		{
+			$spi_query[] = "spi_{$key} TEXT NULL";
+		}
+		$spi_query = implode( ", \n", $spi_query );
+		$query = <<<SQL
+CREATE TABLE {$wpdb->prefix}shopp_importer
+(
+id					INT NOT NULL AUTO_INCREMENT, PRIMARY KEY(id),
+product_id			TEXT NULL,
+price_options		TEXT NULL,
+price_optionkey		TEXT NULL,
+price_label			TEXT NULL,
+processing_status	INT NULL DEFAULT 0,
+{$spi_query}
+);
+SQL;
 		$result = $wpdb->query($query);
-
-		// assemble query
-		$query = " INSERT INTO {$wpdb->prefix}shopp_importer (";
 
 		// assemble headers
-		$column_index = 0;
 		foreach ($this->column_map as $key=>$value) {
-			if ($column_index > 0) $query .= ", ";
-			$query .= " spi_" . $key . " ";
-			$column_index ++;
+			$query_headers[] = "spi_$key";
 		}
-		$query .= ") VALUES ";
+		$query_header_sql = implode( ', ', $query_headers );
 
-		$sql_beginning = $query;
+		// assemble query
+
 		// assemble data
-		for ($slice=0; $slice < count($this->examine_data); $slice+=30) {
-			$query = '';
-			foreach (array_slice($this->examine_data,$slice,30) as $row) {
-				$values = '';
-				foreach ($this->column_map as $key=>$value) {
-					if (strpos($key,'image')!==false) {
-						if ($this->Shopp->Settings->get('catskin_importer_remove_image_paths') == 'yes') { // removes paths.
-							foreach (array('\\','/') as $char)
-								if ($v=strrchr($row[$value],$char))
-									$row[$value] = substr($v,1);
-						}
-						$row[$value] = str_replace("%", "~", rawurlencode($row[$value]));
+		$chunk_size = 30;
+		for ( $slice = 0; $slice < count( $this->examine_data ); $slice += $chunk_size ) {
+			foreach( array_slice( $this->examine_data, $slice, $chunk_size ) as $row ) {
+				$values = array();
+				foreach( $this->column_map as $field_name => $column_id ) {
+					$value = $row[ $column_id ];
 
+					if( strpos( $field_name, 'image' ) !== false )
+					{
+						if( $this->Shopp->Settings->get( 'catskin_importer_remove_image_paths' ) == 'yes' )
+							$value = $this->remove_image_paths( $value );
+						$value = str_replace( "%", "~", rawurlencode( $value ) );
 					}
-					$row[$value] = $this->quote_smart($row[$value],$key);
-					$values .= ($values ? ', ' : '').$row[$value];
+					$value = $this->quote_smart( $value, $field_name );
+
+					$values[] = $value;
 				}
-				$query .= ($query ? ', ' : '')."($values)";
+				$rows[] = '( ' . implode( ', ', $values ) . ' )';
 			}
-			if (!empty($query)) {
-				$query = $sql_beginning.$query.'; ';
+			if (!empty($rows)) {
+				$query_values_sql = implode( ",\n\t", $rows );
+
+				$query = <<<SQL
+INSERT INTO {$wpdb->prefix}shopp_importer (
+	{$query_header_sql}
+) VALUES
+	{$query_values_sql};
+SQL;
 				$last_result = $result;
-				$result = $wpdb->query($query);
-				if (!($result > 0)) {
+				$result = $wpdb->query( $query );
+				if ( !( $result > 0 ) ) {
 					$message = "Error importing CSV file";
-					$this->log($message);
-					if (!$this->auto_import) {
+					$this->log( $message );
+					if ( !$this->auto_import ) {
 						echo "<h3>$message. Debug info below:</h3>";
-						var_dump($query,$row[$value],$this->column_map);
-						var_dump($result,array_slice($this->examine_data,$slice,1));
+						var_dump( $query, $row[$value], $this->column_map );
+						var_dump( $result, array_slice( $this->examine_data, $slice, 1 ));
 					}
-					if (!($last_result>0)) die;
+					if ( !( $last_result > 0 ) ) die;
 				}
 			}
 		}
+
 		// $this->map_columns_from_saved_options();
 		// $this->log(' map_columns_from_saved_options',4);
 		// $ajax_result = json_encode($result);
@@ -692,6 +619,7 @@ class shopp_product_importer {
 		if ($this->auto_import) return true;
 		exit;
 	}
+
 	function ajax_import_products() {
 		set_time_limit(24000);
 		global $wpdb, $Shopp;
@@ -701,7 +629,6 @@ class shopp_product_importer {
 		$model = new spi_model($this);
 		$model->execute();
 		$model->execute_mega_query();
-
 
 		function extrapolate_result(&$val, $total=null) {
 			$temp = count($val);
@@ -882,15 +809,20 @@ HTML;
 					case 'M':	// M    Missing
 					case 'U':	// U    Consumed as part (assembled into item or used in repair job)
 					default:
-						if ($this->Shopp->Settings->get('catskin_importer_empty_first') == 'no') {
-							$_SESSION['spi_products_to_remove'][$row[ $this->column_map['sku'] ]] = $row[ $this->column_map['name'] ]; // record lines to remove from DB
-						} else {
-							$_SESSION['spi_products_filtered_inv'][] = $csv_product_id; // or if starting from empty, log which were filtered out
+
+						if ( $this->Shopp->Settings->get('catskin_importer_empty_first') == 'no' )
+						{
+							// record lines to remove from DB
+							$_SESSION[ 'spi_products_to_remove' ][ $row[ $this->column_map[ 'sku' ] ] ] = $row[ $this->column_map[ 'name' ] ];
+						}
+						else
+						{
+							// or if starting from empty, log which were filtered out
+							$_SESSION[ 'spi_products_filtered_inv' ][] = $this->column_map[ 'sku' ];
 						}
 						unset($this->examine_data[$key]);
 					break;
 				}
-
 			}
 
 			// $this->log(' map_columns_from_saved_options',4);
@@ -922,39 +854,34 @@ HTML;
 		$this->tag_map = null;
 		$this->category_map = null;
 		$this->image_map = null;
-		$tag_counter = 0;
-		$category_counter = 0;
-		$variation_counter = 0;
-		$image_counter = 0;
-		$spec_counter = 0;
 		$saved_column_map = $this->Shopp->Settings->get('catskin_importer_column_map');
-		for ($col_index = 0; $col_index < $this->Shopp->Settings->get('catskin_importer_column_count'); $col_index++) {
-			if ($saved_column_map[$col_index]["type"] == 'tag') {
-				$tag_counter++;
-				$this->column_map[$col_index] = $saved_column_map[$col_index]["type"].$tag_counter;
-				$this->tag_map[] = $saved_column_map[$col_index]["type"].$tag_counter;
-			 }else if ($saved_column_map[$col_index]["type"] == 'spec') {
-				//echo $saved_column_map[$col_index]["type"].'<br/>';
-				$spec_counter++;
-				$this->column_map[$col_index] = $saved_column_map[$col_index]["type"].$spec_counter;
-				$this->spec_map[] = $saved_column_map[$col_index]["type"].$spec_counter;
-			} else if ($saved_column_map[$col_index]["type"] == 'variation') {
-				$variation_counter++;
-				$this->column_map[$col_index] = $saved_column_map[$col_index]["label"];
-				$this->variation_map[] = $saved_column_map[$col_index]["label"];
-			} else if ($saved_column_map[$col_index]["type"] == 'category') {
-				$category_counter++;
-				$this->column_map[$col_index] = $saved_column_map[$col_index]["type"].$category_counter;
-				$this->category_map[] = $saved_column_map[$col_index]["type"].$category_counter;
-			} else if ($saved_column_map[$col_index]["type"] == 'image') {
-				$image_counter++;
-				$this->column_map[$col_index] = $saved_column_map[$col_index]["type"].$image_counter;
-				$this->image_map[] = $saved_column_map[$col_index]["type"].$image_counter;
-			} else if ($saved_column_map[$col_index]["type"] != '') {
-				$this->column_map[$col_index] = $saved_column_map[$col_index]["type"];
+		for ( $col_index = 0; $col_index < count( $saved_column_map ); $col_index ++ )
+		{
+			$type = &$saved_column_map[$col_index]["type"];
+			switch( $type )
+			{
+				case '':
+					break;
+				case 'tag':
+					$this->tag_map[] = $this->column_map[$col_index] = $type.(count($this->tag_map)+1);
+					break;
+				case 'spec':
+					//echo $type.'<br/>';
+					$this->spec_map[] = $this->column_map[$col_index] = $type.(count($this->spec_map)+1);
+					break;
+				case 'variation':
+					$this->variation_map[] = $this->column_map[$col_index] = $type.(count($this->variation_map)+1);
+					break;
+				case 'category':
+					$this->category_map[] = $this->column_map[$col_index] = $type.(count($this->category_map)+1);
+					break;
+				case 'image':
+					$this->image_map[] = $this->column_map[$col_index] = $type.(count($this->image_map)+1);
+					break;
+				default:
+					$this->column_map[$col_index] = $type;
 			}
 		}
-
 		$this->column_map = array_flip($this->column_map);
 		// HACK to use sk as ID
 		$this->column_map['id'] = $this->column_map['sku'];
@@ -968,21 +895,17 @@ HTML;
 
 	public function log($message,$level=4)
 	{
-		$message = "$message  ".$this->report_memory();
-		// if ($this->debug) echo "<p style='font-size:10px'>$message</p>";
-		if ($this->auto_import) {
-			$datetime = date('Y-m-d H:i:s');
-			$write = "$datetime - $message\n";
-			$fh = fopen( $_SERVER['DOCUMENT_ROOT']."/import.log", 'a') or die("can't open import.log");
-			fwrite($fh, $write); fclose($fh);
-		} else {
-			// error_log($message,$level);
-			$datetime = date('Y-m-d H:i:s');
-			$write = "$datetime - $message\n";
-			$fh = fopen( $_SERVER['DOCUMENT_ROOT']."/import_manual.log", 'a') or die("can't open import_manual.log");
-			fwrite($fh, $write); fclose($fh);
+		$log_name = ($this->auto_import) ? 'import.log' : 'import_manual.log';
+		$fh = fopen( "{$_SERVER['DOCUMENT_ROOT']}/$log_name", 'a' ) or die( "can't open $log_name" );
 
-		}
+		if( $this->Shopp->Settings->get( 'catskin_importer_debug_output' ) == 'yes' )
+			echo "$message<br>\n";
+
+		$message = "$message  ".$this->report_memory();
+
+		fwrite( $fh, date('Y-m-d H:i:s')." - $message\n" );
+		fclose( $fh );
+
 		return $message;
 
 	}
@@ -998,12 +921,26 @@ HTML;
 	}
 
 	function convert_bytes($size)
-	 {
-		$unit=array('b','kb','mb','gb','tb','pb');
-		return @round($size/pow(1024,($i=floor(log($size,1024)))),2).' '.$unit[$i];
-	 }
+	{
+		$unit = array( 'b', 'kb', 'mb', 'gb', 'tb', 'pb' );
+		return @round(
+				$size / pow(
+					1024,
+					( $i = floor(
+							log( $size, 1024 )
+						)
+					)
+				), 2
+			) . ' ' . $unit[ $i ];
+	}
 
-
+	function remove_image_paths( $value )
+	{
+		foreach( array( '\\', '/' ) as $char )
+			if( $v = strrchr( $value, $char ) )
+				$value = substr( $v, 1 );
+		return $value;
+	}
 }
 
 class shoppImporterException extends Exception

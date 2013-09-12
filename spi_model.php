@@ -25,7 +25,7 @@ class spi_model {
 	var $global_spec_total = 0;
 
 	//Initialize Categories
-	var $cat_index = 0;
+	//var $cat_index = 0;
 	var $edge_cat_builder = array();
 
 	public $result = array();
@@ -37,7 +37,7 @@ class spi_model {
 			$this->spi = $spi;
 			$this->Shopp = $spi->Shopp;
 			//Is this used?
-			$this->cat_index = $this->get_next_shopp_category_id();
+			// $this->cat_index = $this->get_next_shopp_category_id();
 			$this->files = new spi_files($this->spi);
 		}
 	}
@@ -721,7 +721,7 @@ class spi_model {
 		,	'400' // gold wedding bands
 		,	'401' // fancy wedding bands
 		,	'425' // gold earrings
-		, '435' // gold pendants/charms ??
+		,	'435' // gold pendants/charms ??
 		,	'440' // gold bracelets womens
 		// ,	'506' // accutron mens watches
 		// ,	'507' // accutron ladies watches
@@ -845,10 +845,8 @@ class spi_model {
 		}
 	}
 
-
-
 	function initialize_categories($csv_product_id) {
-		$cat_index = $this->cat_index;
+		// $cat_index = $this->cat_index;
 		$parent_index = 0;
 		$type=false;
 		$cat_array=array();
@@ -857,7 +855,7 @@ class spi_model {
 		for ($i=0; $i<count($this->map); $i++) {
 			$mset = $this->map[$i];
 			switch ($mset['type']) {
-				case 'edge_category_id': // EDGE Category Name
+				case 'edge_category_id': // EDGE Category ID
 					$type='id';
 					break;
 				case 'edge_category_name': // EDGE Category Name
@@ -896,15 +894,13 @@ class spi_model {
 				if (!$cat_string || $this->any_exist('spi_category',$csv_product_id) > 0) {
 					// var_dump($cat_array);
 					foreach ($cat_array as $index=>&$cats) {
-					if ($cats==array(0=>'')) echo "BAD";
-					$this->make_category($cats,$cat_index,$parent_index,$csv_product_id,($edge?$index:null));
+						if ($cats==array(0=>'')) echo "BAD";
+						$this->make_category($cats,$cat_index,$parent_index,$csv_product_id,($edge?$index:null));
 					}
 				}
 				unset ($cat_array,$cat_string,$edge);
 			}
-
 		}
-
 		$this->cat_index = $cat_index;
 	}
 
@@ -913,13 +909,13 @@ class spi_model {
 		$edge_data = $this->edge_cat_builder[$csv_product_id];
 		$cat_array = array();
 		if (isset($edge_data['type'])
-		&&	isset($edge_data['desc'])
-		&&	isset($edge_data['name'])
-		&&	isset($edge_data['id'])
-		&&	is_string($cat_array[0] = $edge_data['type'])
-		&&	is_string($cat_array[1] = $edge_data['desc'])
-		&&	is_string($cat_array[2] = $edge_data['name'])
-		&&	($id = $edge_data['id'])
+			&&	isset($edge_data['desc'])
+			&&	isset($edge_data['name'])
+			&&	isset($edge_data['id'])
+			&&	is_string($cat_array[0] = $edge_data['type'])
+			&&	is_string($cat_array[1] = $edge_data['desc'])
+			&&	is_string($cat_array[2] = $edge_data['name'])
+			&&	($id = $edge_data['id'])
 		) {
 			if (false) {
 				$watch_list = array(
@@ -981,98 +977,98 @@ class spi_model {
 		}
 	}
 
-	function make_edge_category(&$cat_array,&$cat_index,&$parent_index,&$csv_product_id,$index=null)
+	function make_edge_category( &$cat_array, &$cat_index, &$parent_index, &$csv_product_id, $index=null )
 	{ // not in use!
 
 		//initialize our arrays for reuse
 		$uri_array = array();
 		// var_dump($cat_array);die;
-		if (!is_array($cat_array)) $cat_array = array( $cat_array );
+		if ( !is_array( $cat_array ) ) $cat_array = array( $cat_array );
 		//reverse the array for ease of use
-		array_reverse($cat_array);
+		array_reverse( $cat_array );
 
-		var_dump ($cat_array);
+		var_dump( $cat_array );
 
-		for ($i=0; $i<sizeof($cat_array);$i++) {
+		for ( $i = 0; $i < sizeof( $cat_array ); $i ++ ) {
 			//build an array of category uri's we're going to use these as the
 			//unique identifier for categories
-			$uri_array[$i] = sanitize_title_with_dashes(strtr($cat_array[$i],'/','-'));
+			$uri_array[ $i ] = sanitize_title_with_dashes( strtr( $cat_array[ $i ], '/', '-' ) );
 		}
-		for ($i=0; $i<sizeof($cat_array); $i++) {
+		for ( $i = 0; $i < sizeof( $cat_array ); $i ++ ) {
 			$map_category = new map_category();
 			$map_category->name = 'spi_category';
-			$map_category->value = $cat_array[$i];
-			echo "  > slug : ",$map_category->slug = $uri_array[$i];
-			echo "  > id   : ",$map_category->id = ($index>0?$index:$cat_index);
-			echo "  > prnt : ",$map_category->parent_id = $parent_index;
+			$map_category->value = $cat_array[ $i ];
+			echo "  > slug : ", $map_category->slug = $uri_array[ $i ];
+			echo "  > id   : ", $map_category->id = ( $index > 0 ? $index : $cat_index );
+			echo "  > prnt : ", $map_category->parent_id = $parent_index;
 			$map_category->csv_product_id = $csv_product_id;
 			$map_category->csv_product_ids[] = $csv_product_id;
 			$pop_array = $uri_array;
-			for ($j=0;$j<(sizeof($cat_array)-($i+1)); $j++ ) {
-				array_pop($pop_array);
+			for ( $j = 0; $j < ( sizeof( $cat_array ) - ( $i + 1 ) ); $j ++ ) {
+				array_pop( $pop_array );
 			}
 			$parent_pop_array = $uri_array;
-			for ($j=0;$j<(sizeof($cat_array)-($i)); $j++ ) {
-				array_pop($parent_pop_array);
+			for ( $j = 0; $j < ( sizeof( $cat_array ) - ( $i ) ); $j ++ ) {
+				array_pop( $parent_pop_array );
 			}
-			if (sizeof($pop_array) == 1) {
+			if ( sizeof( $pop_array ) == 1) {
 				$map_category->parent_id = 0;
 
 			} else {
 				$map_category->parent_id = $parent_index;
 			}
-			var_dump($pop_array);die;
-			$map_category->uri = join('/',$pop_array);
-			$map_category->parent_uri = join('/',$parent_pop_array);
+			var_dump( $pop_array );die;
+			$map_category->uri = join( '/', $pop_array );
+			$map_category->parent_uri = join( '/', $parent_pop_array );
 
-			$existing_shopp_category = $this->category_exists($map_category->uri,$index);
+			$existing_shopp_category = $this->category_exists( $map_category->uri, $index );
 
-			if (!is_null($this->category_by_uri($map_category->uri))) {
-				if ($this->Shopp->Settings->get('catskin_importer_match_categories') == 'yes') {
+			if ( ! is_null( $this->category_by_uri( $map_category->uri ) ) ) {
+				if ( $this->Shopp->Settings->get( 'catskin_importer_match_categories' ) == 'yes' ) {
 					// ^ Currently does nothing
-					$this->categories[ $this->key_to_category_by_uri($map_category->uri) ]->csv_product_ids[] = $csv_product_id;
+					$this->categories[ $this->key_to_category_by_uri( $map_category->uri ) ]->csv_product_ids[] = $csv_product_id;
 				} else {
-					$this->categories[ $this->key_to_category_by_uri($map_category->uri) ]->csv_product_ids[] = $csv_product_id;
+					$this->categories[ $this->key_to_category_by_uri( $map_category->uri ) ]->csv_product_ids[] = $csv_product_id;
 				}
-			} elseif ($this->Shopp->Settings->get('catskin_importer_create_categories') == 'yes') {
-				if (is_null($this->category_by_uri($map_category->parent_uri))) {
+			} elseif ( $this->Shopp->Settings->get('catskin_importer_create_categories') == 'yes' ) {
+				if ( is_null( $this->category_by_uri( $map_category->parent_uri ) ) ) {
 					$map_category->parent_id = 0;
 				} else {
-					$parent_category = $this->category_by_uri($map_category->parent_uri);
+					$parent_category = $this->category_by_uri( $map_category->parent_uri );
 					$map_category->parent_id = $parent_category->id;
 				}
-				if ($existing_shopp_category) {
+				if ( $existing_shopp_category ) {
 					$map_category->id = $existing_shopp_category->id;
 					$map_category->exists = true;
 					$map_category->parent_id = $existing_shopp_category->parent;
 				} else {
-					$cat_index++;
+					$cat_index ++;
 				}
 				// var_dump($map_category);
-				if ($index) $this->categories['edge_'.$index] = $map_category;
+				if ( $index ) $this->categories[ 'edge_' . $index ] = $map_category;
 				else $this->categories[] = $map_category;
 			}
 
 		}
-
 	}
-	function make_category(&$cat_array,&$cat_index,&$parent_index,&$csv_product_id,$index=null)
+
+	function make_category( &$cat_array, &$cat_index, &$parent_index, &$csv_product_id, $index=null )
 	{
 		//initialize our arrays for reuse
 		$uri_array = array();
 		// var_dump($cat_array);
 		//reverse the array for ease of use
-		if (!is_array($cat_array)) $cat_array = array( $cat_array );
-		array_reverse($cat_array);
+		if ( ! is_array( $cat_array ) ) $cat_array = array( $cat_array );
+		array_reverse( $cat_array );
 
 		// var_dump ($cat_array);
 
-		for ($i=0; $i<sizeof($cat_array);$i++) {
+		for ( $i = 0; $i < sizeof( $cat_array ); $i ++ ) {
 			//build an array of category uri's we're going to use these as the
 			//unique identifier for categories
-			$uri_array[$i] = sanitize_title_with_dashes(strtr($cat_array[$i],'/','-'));
+			$uri_array[ $i ] = sanitize_title_with_dashes( strtr( $cat_array[ $i ], '/', '-' ) );
 		}
-		for ($i=0; $i<sizeof($cat_array); $i++) {
+		for ( $i = 0; $i < sizeof( $cat_array ); $i ++ ) {
 			$map_category = new map_category();
 			$map_category->name = 'spi_category';
 			$map_category->value = $cat_array[$i];
@@ -1085,54 +1081,65 @@ class spi_model {
 			$map_category->csv_product_id = $csv_product_id;
 			$map_category->csv_product_ids[] = $csv_product_id;
 			$pop_array = $uri_array;
-			for ($j=0;$j<(sizeof($cat_array)-($i+1)); $j++ ) {
-				array_pop($pop_array);
+			for( $j = 0; $j < ( sizeof( $cat_array ) - ( $i + 1 ) ); $j ++ ) {
+				array_pop( $pop_array );
 			}
 			$parent_pop_array = $uri_array;
-			for ($j=0;$j<(sizeof($cat_array)-($i)); $j++ ) {
-				array_pop($parent_pop_array);
+			for( $j = 0; $j < ( sizeof( $cat_array ) - ( $i ) ); $j ++ ) {
+				array_pop( $parent_pop_array );
 			}
-			if (sizeof($pop_array) == 1) {
+			if( sizeof( $pop_array ) == 1 ) {
 				$map_category->parent_id = 0;
-
 			} else {
 				$map_category->parent_id = $parent_index;
 			}
-			$map_category->uri = join('/',$pop_array);
-			$map_category->parent_uri = join('/',$parent_pop_array);
+			$map_category->uri = join( '/', $pop_array );
+			$map_category->parent_uri = join( '/', $parent_pop_array );
 
-
-			$existing_shopp_category = $this->category_exists($map_category->uri,$index);
+			$existing_shopp_category = $this->category_exists( $map_category->uri, $index );
 			// if (!$existing_shopp_category) $this->spi->log('make_category new: '.$index);
 
-			if ($this->category_by_uri($map_category->uri)) {
-				if ($this->Shopp->Settings->get('catskin_importer_match_categories') == 'yes') {
+			if( $this->category_by_uri( $map_category->uri ) )
+			{
+				if( $this->Shopp->Settings->get('catskin_importer_match_categories') == 'yes' )
+				{
 					// ^ Currently does nothing
-					$this->categories[ $this->key_to_category_by_uri($map_category->uri) ]->csv_product_ids[] = $csv_product_id;
-				} else {
-					$this->categories[ $this->key_to_category_by_uri($map_category->uri) ]->csv_product_ids[] = $csv_product_id;
+					$this->categories[ $this->key_to_category_by_uri( $map_category->uri ) ]->csv_product_ids[] = $csv_product_id;
 				}
-			} elseif ($this->Shopp->Settings->get('catskin_importer_create_categories') == 'yes') {
-				if (is_null($this->category_by_uri($map_category->parent_uri))) {
+				else
+				{
+					$this->categories[ $this->key_to_category_by_uri( $map_category->uri ) ]->csv_product_ids[] = $csv_product_id;
+				}
+			}
+			elseif( $this->Shopp->Settings->get( 'catskin_importer_create_categories' ) == 'yes' )
+			{
+				if( is_null($this->category_by_uri($map_category->parent_uri)))
+				{
 					$map_category->parent_id = 03;
-				} else {
+				}
+				else
+				{
 					$parent_category = $this->category_by_uri($map_category->parent_uri);
 					$map_category->parent_id = $parent_category->id;
 				}
-				if ($existing_shopp_category) {
+
+				if ($existing_shopp_category)
+				{
 					$map_category->id = $existing_shopp_category->id;
 					$map_category->exists = true;
 					$map_category->parent_id = $existing_shopp_category->parent;
-				} else {
-					$cat_index++;
 				}
+				else
+					$cat_index++;
+
 				// var_dump($map_category);
-				if ($index) $this->categories['edge_'.$index] = $map_category;
-				else $this->categories[] = $map_category;
+				if ($index)
+					$this->categories['edge_'.$index] = $map_category;
+				else
+					$this->categories[] = $map_category;
 			}
 			// var_dump($map_category);die;
 		}
-
 	}
 	// TODO:
 	/*
@@ -1141,7 +1148,6 @@ class spi_model {
 	*/
 
 	function initialize_product(&$map_product,$csv_product_id,$shopp_product_id) {
-
 
 		$this->global_spec_counter = 1;
 		$map_product->id = $shopp_product_id;
@@ -1238,8 +1244,8 @@ class spi_model {
 					//}
 					break;
 			}
-
 		}
+
 		$this->last_csv_product_id = $csv_product_id;
 		if (!isset($map_product->variations)) {
 			$map_product->has_variations = 'off';
@@ -1259,7 +1265,6 @@ class spi_model {
 
 	function remove_product(&$map_product,$csv_product_id,$shopp_product_id)
 	{
-
 		$map_product->id = $shopp_product_id;
 		$map_product->csv_id = $csv_product_id;
 		$cat_index = $this->cat_index;
@@ -1269,9 +1274,7 @@ class spi_model {
 				case 'description':
 					$map_product->description = $this->get_mapped_var($csv_product_id,$mset['header']);
 					break;
-
 			}
-
 		}
 	}
 	function initialize_prices($map_product) {
@@ -1291,7 +1294,6 @@ class spi_model {
 		$row_data = $this->get_importer_data($map_product);
 		$row_type = (isset($groups))?"N/A":$this->defval($row_data->spi_type,"Shipped");
 		$row_price = (isset($groups))?"0.00":$this->defval($row_data->spi_price,"0.00");
-
 
 		$tc1 = array(
 			"product"=>$map_product->id,
@@ -1386,15 +1388,11 @@ class spi_model {
 
 	}
 
-
-
 	function microtime_float()
 	{
 	    list($usec, $sec) = explode(" ", microtime());
 	    return ((float)$usec + (float)$sec);
 	}
-
-
 
 	//Checks to see if a specific type of field exists in the shopp_product_importer data table
 	//csv_product_id relates to $this->map[$id]['header'] eg. spi_saleprice, spi_tag1, spi_name
@@ -1561,7 +1559,7 @@ class spi_model {
 
 	//get_next_product selects the next product from the shopp_product_importer data table
 	//which meets the status code criteria.
-	function get_next_product($status,$as_set=false) {
+	function get_next_product( $status, $as_set=false ) {
 		global $wpdb;
 		$query = "SELECT * FROM {$wpdb->prefix}shopp_importer WHERE (processing_status = {$status}) ORDER BY id limit 1";
 		if ($as_set) $result = $wpdb->get_results($query,OBJECT);
@@ -1703,22 +1701,22 @@ class spi_model {
 		if (strlen($product_set_id) > 0) {
 			$spi_images = new spi_images($this->spi);
 
-			$img = home_url('/'.$this->Shopp->Settings->get('catskin_importer_imageformat'));
-			$img = str_replace('{val}',$this->get_row_mapped_var($pmap->id,$mset['header']),$img);
-			$process_count = $spi_images->import_product_images($product_set_id,array($img));
+			$img = home_url( '/' . $this->Shopp->Settings->get( 'catskin_importer_imageformat' ) );
+			$img = str_replace( '{val}', $this->get_row_mapped_var( $pmap->id, $mset[ 'header' ] ), $img );
+			$process_count = $spi_images->import_product_images( $product_set_id, array( $img ) );
 			unset($spi_images);
 		}
 		return $process_count;
 	}
 
-	function process_all($status) {
+	function process_all( $status ) {
 		global $wpdb;
 		$query = "UPDATE {$wpdb->prefix}shopp_importer SET processing_status = {$status};";
 		$result = $wpdb->query($query);
 		return $result;
 	}
 
-	function process_image($id,$column_header,$column_value,$status) {
+	function process_image( $id, $column_header, $column_value, $status ) {
 		global $wpdb;
 		$query = "UPDATE {$wpdb->prefix}shopp_importer SET processing_status = {$status} WHERE spi_id  = '{$id}' AND {$column_header} = '{$column_value}'";
 		$result = $wpdb->query($query);
@@ -1741,7 +1739,7 @@ class spi_model {
 		return $result;
 	}
 
-	function remove_product_existing($id) {
+	function remove_product_existing( $id ) {
 		global $wpdb;
 		$id = trim($id);
 		$query = "DELETE FROM {$wpdb->prefix}shopp_catalog WHERE product = '{$id}'";
@@ -1753,7 +1751,7 @@ class spi_model {
 		return $result;
 	}
 
-	function remove_product_import($id) {
+	function remove_product_import( $id ) {
 		global $wpdb;
 		$id = trim($id);
 		$wpdb->show_errors();
@@ -1762,15 +1760,14 @@ class spi_model {
 		return $result;
 	}
 
-	function product_by_csv_id($csv_id) {
+	function product_by_csv_id( $csv_id ) {
 		foreach ($this->products as $product) {
 			if ($product->csv_id == $csv_id) return $product;
 		}
 		return null;
 	}
 
-
-	function product_exists($name,$sku) {
+	function product_exists( $name, $sku ) {
 		global $wpdb;
 		$query = "SELECT pd.id FROM {$wpdb->prefix}shopp_product pd, {$wpdb->prefix}shopp_price pc WHERE (pd.id = pc.product) AND (pc.sku='".addslashes($sku)."' ) LIMIT 1;";
 		// $query = "SELECT pd.id FROM {$wpdb->prefix}shopp_product pd, {$wpdb->prefix}shopp_price pc WHERE (pd.id = pc.product) AND (pd.name='".addslashes($name)."' AND pc.sku='".addslashes($sku)."' ) LIMIT 1;";
@@ -1780,7 +1777,7 @@ class spi_model {
 		return $result;
 	}
 
-	function tag_exists($name,$id) {
+	function tag_exists( $name, $id ) {
 		global $wpdb;
 			$query = "SELECT * FROM {$wpdb->prefix}shopp_tag t,{$wpdb->prefix}shopp_catalog c WHERE (t.id = c.tag) AND (t.name = '{$name}' AND c.product = '{$id}');";
 			$result = $wpdb->get_row($query);

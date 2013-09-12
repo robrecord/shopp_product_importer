@@ -19,7 +19,7 @@
 
 	//Maintenance Message??? 1.1 dev
 	if (SHOPP_VERSION >= '1.1') {
-		if ($data_version >= 1100 || $shopp_first_run != "off") {
+		if ($shopp_data_version <= 1100 || $shopp_first_run != "off") {
 			exit("<h2>Shopp Product Importer</h2><p>Complete Shopp installation prior to importing CSV's.</p>");
 			return false;
 		}
@@ -132,11 +132,12 @@
 
   	}
  ?>
+
 	<?php if (!empty($updated)): ?><div id="message" class="updated fade"><p><?php echo $updated; ?></p></div><?php endif; ?>
 
 	<form enctype="multipart/form-data" name="settings" id="general" action="<?php echo esc_url($_SERVER['REQUEST_URI']); ?>" method="post">
 		<?php wp_nonce_field('shopp-importer'); ?>
-	<div id="main-container" style="position:relative; width:100%; float:left; line-height:200%;">
+	<div id="main-container">
 		<div style="float:right; line-height:160%;">
 			<img src="<?php echo WP_PLUGIN_URL."/".$this->directory; ?>/images/shopp_product_importer_csv_logo.png" style="border:0px; position:relative; display:block; margin:12px 4px;"/><p>&nbsp;</p>
 
@@ -148,79 +149,159 @@
 		</div>
 		<h2><?php _e('Shopp Product Importer','Shopp'); ?></h2>
 		<p><?php _e('Click the help link for instructions and samples.	','Shopp'); ?><br/></p>
-		<div style="margin:5px 300px 5px 0px; padding:20px; background:#fff; border-radius:10px;">
-			<table cellspacing="4">
-				<tr>
-					<td style="padding:5px; width:300px; vertical-align:top;border-bottom:1px solid #fff;"><b><label for="catskin_importer_file"><?php _e('CSV to import','Shopp'); ?>: </label></b></td>
-					<td style="padding:5px; width:auto; vertical-align:top;border-bottom:1px solid #fff;"><input type="hidden" name="MAX_FILE_SIZE" value="300000" />
-		<?php
-			if ($handle = opendir($this->csv_get_path)) {
-			    echo "<select name='settings[catskin_importer_file]' onchange='javascript:(function($){update_required();})(jQuery);' >";
-			    echo "<option value='no-file-selected'>Select File</option>";
-
-			    /* This is the correct way to loop over the directory. */
-			    while (false !== ($file = readdir($handle))) {
+		<div id="settings">
+			<table class="form-table">
+				<tr class="setting">
+					<td>
+						<label for="catskin_importer_csv_directory"><?php _e('Image url format','Shopp'); ?></label>
+					</td>
+					<td>
+						<?= ABSPATH ?><input name="settings[catskin_importer_csv_directory]" value="<?php echo $this->Shopp->Settings->get('catskin_importer_csv_directory') ?>" id="catskin_importer_csv_directory" onchange="update_required();" size="20">
+						<span class="help">eg: wp-content/csv-upload</span>
+					</td>
+				</tr>
+				<tr class="setting">
+					<td>
+						<label for="catskin_importer_file"><?php _e('CSV to import','Shopp'); ?></label>
+					</td>
+					<td>
+						<input type="hidden" name="MAX_FILE_SIZE" value="300000" />
+						<select name='settings[catskin_importer_file]' onchange='update_required();' >
+			<?php if ($handle = opendir($this->csv_get_path)) : ?>
+				    		<option value='no-file-selected'>Select File</option>
+			<?php
+				while (false !== ($file = readdir($handle))) {
 					$path_parts = pathinfo($this->csv_get_path.$file);
-					if ($path_parts['extension'] == 'csv') {
-				    	if (attribute_escape($this->Shopp->Settings->get('catskin_importer_file')) == $file) { $selected = ' selected="selected" '; } else { $selected = ''; }
-				        echo "<option value='$file' $selected>$file</option>\n";
-			        }
-			    }
+					if ($path_parts['extension'] == 'csv') : ?>
+							<option value='<?= $file ?>' <?php echo (attribute_escape($this->Shopp->Settings->get('catskin_importer_file')) == $file) ?
+							    		'selected="selected"' : '' ?>><?= $file ?></option>
+					<?php endif;
+				}
+				closedir($handle);
+			else: ?>
+				    		<option value='no-file-selected'>No Files Found</option>
+			<?php endif; ?>
+						</select>
+						<span class="help"><?php _e("Choose from list of CSV files uploaded to <b>".$this->csv_get_path."</b> folder.",'Shopp'); ?></span>
+					</td>
+				</tr>
 
-			    /* This is the WRONG way to loop over the directory. */
-			    while ($file = readdir($handle)) {
-			        echo "$file\n";
-			    }
-			 	echo "</select>";
-			    closedir($handle);
-			} else {
-			    echo "<select name='settings[catskin_importer_file]' onchange='javascript:(function($){update_required();})(jQuery);' >";
-			    echo "<option value='no-file-selected'>Select File</option>";
-			 	echo "</select>";
-			}
-		?>
-		<?php _e("list contains csv's uploaded to <b>/wp-content/edge/</b> folder.",'Shopp'); ?></td>
+				<style>
+					#main-container {
+						position:relative; width:100%; float:left; line-height:200%;
+					}
+					#settings {
+						margin-right:300px;
+						line-height: 1.5;
+						clear:left;
+						border: 1px solid #eee;
+						border-radius: 10px;
+					}
+					#settings .form-table {
+						background-color: white;
+						clear:none;
+						width: auto;
+					}
+					.setting td {
+						background-color: transparent;
+						vertical-align: baseline;
+					}
+					.setting td > * {
+						line-height: inherit;
+						display: inline-block;
+						vertical-align: baseline;
+					}
+					.setting td > label {
+						font-weight: bold;
+						width: 300px;
+						vertical-align: top;
+					}
+					.setting td:last-child {
+						font-size: 0.9rem;
+					}
+					.setting .help {
+						font-style:italic;
+						display: block;
+						font-size: 0.8em;
+					}
+					.setting input {
+						padding: 5px;
+						margin: 3px 0;
+						box-sizing: border-box;
+					}
+				</style>
+				<tr class="setting">
+					<td>
+						<label for="csvupload">
+							<?php _e('Upload a CSV','Shopp'); ?>
+						</label>
+					</td>
+					<td>
+						<input type="file" name="csvupload"  onchange="update_required();" />
+						<span class="help">
+							<?php _e('If the upload utility does not save your CSV file to the list, create the <b>'.$this->csv_get_path.'</b> folder and FTP your CSV file to that location. Refresh this page and the CSV should then be available to use.','Shopp'); ?>
+						</span>
+					</td>
 				</tr>
-				<tr>
-					<td style="padding:5px; width:300px; vertical-align:top; border-bottom:1px solid #fff;"><b><label for="csvupload"><?php _e('Upload a CSV','Shopp'); ?>: </label></b></td>
-					<td style="padding:5px; width:auto; vertical-align:top;border-bottom:1px solid #fff;"><input type="file" name="csvupload"  onchange="javascript:(function($){update_required();})(jQuery);" /> <br/><i><?php _e('If the upload utility does not save your CSV file to the list, create the <b>/wp-content/edge/</b> folder and FTP your CSV file to that location. Refresh this page and the CSV should then be available to use.','Shopp'); ?></i></td>
+				<tr class="setting">
+					<td>
+						<label for="catskin_importer_csv_path"><?php _e("Path to FTP'd HTML descriptions",'Shopp'); ?></label>
+					</td>
+					<td>
+						<?php $html_path =
+							( strlen( $this->Shopp->Settings->get( 'catskin_importer_html_path' ) ) > 0 ?
+								attribute_escape( $this->Shopp->Settings->get( 'catskin_importer_html_path' ) ) :
+								'product_html'
+							) ?></span>
+						<?= $this->csv_root ?><input type="text" name="settings[catskin_importer_html_path]" value="<?php echo $html_path; ?>" id="catskin_importer_html_path" size="20" />
+						<span class="help"><?php _e('Only required when mapping product descriptions to <b>Description [HTML uploaded filename]</b>.','Shopp'); ?></span>
+					</td>
 				</tr>
-				<tr>
-					<td style="padding:5px; width:300px; vertical-align:top; border-bottom:1px solid #fff;"><b><label for="catskin_importer_csv_path"><?php _e("Path to FTP'd HTML descriptions",'Shopp'); ?>: </label></b></td>
-					<td style="padding:5px; width:auto; vertical-align:top;border-bottom:1px solid #fff;"><?php $html_path = (strlen($this->Shopp->Settings->get('catskin_importer_html_path'))>0?attribute_escape($this->Shopp->Settings->get('catskin_importer_html_path')):get_option("siteurl").'/wp-content/product_htmls/')?>
-		<input type="text" name="settings[catskin_importer_html_path]" value="<?php echo $html_path; ?>" id="catskin_importer_html_path" size="100" /><br/><i><?php _e('Only required when mapping product descriptions to <b>Description [HTML uploaded filename]</b>.','Shopp'); ?></i></td>
+				<tr class="setting">
+					<td>
+						<label for="catskin_importer_has_headers"><?php _e('CSV contain a header row','Shopp'); ?></label>
+					</td>
+					<td>
+						<input type="hidden" name="settings[catskin_importer_has_headers]" value="no" />
+						<input type="checkbox" name="settings[catskin_importer_has_headers]" value="yes" id="catskin_importer_has_headers"<?= ($this->Shopp->Settings->get('catskin_importer_has_headers') == "yes") ? ' checked="checked"' : '' ?> onchange="update_required();"/>
+					</td>
 				</tr>
-				<tr>
-					<td style="padding:5px; width:300px; vertical-align:top;"><b><label><?php _e('CSV contain a header row','Shopp'); ?>: </label></b></td>
-					<td style="padding:5px; width:auto; vertical-align:top;"><input type="hidden" name="settings[catskin_importer_has_headers]" value="no" /><input type="checkbox" name="settings[catskin_importer_has_headers]" value="yes" id="catskin_importer_has_headers"<?php if ($this->Shopp->Settings->get('catskin_importer_has_headers') == "yes") echo ' checked="checked"'?> onchange="javascript:update_required();"/><label for="catskin_importer_has_headers"></label></td>
+				<tr class="setting">
+					<td>
+						<label for="catskin_importer_separator"><?php _e('CSV Delimiter','Shopp'); ?></label>
+					</td>
+					<td>
+						<select name="settings[catskin_importer_separator]" id="catskin_importer_separator" onchange="update_required();">
+							<option value="comma" <?php if ($this->Shopp->Settings->get('catskin_importer_separator') == "comma") echo 'selected' ?>>Comma (,)</option>
+							<option value="semicolon" <?php if ($this->Shopp->Settings->get('catskin_importer_separator') == "semicolon") echo 'selected' ?>>semicolon (;)</option>
+						</select>
+					</td>
 				</tr>
-				<tr>
-					<td style="padding:5px; width:300px; vertical-align:top;"><b><label><?php _e('CSV Delimiter','Shopp'); ?>: </label></b></td>
-					<td style="padding:5px; width:auto; vertical-align:top;"><select name="settings[catskin_importer_separator]" id="catskin_importer_separator" onchange="javascript:update_required();">
-					<option value="comma" <?php if ($this->Shopp->Settings->get('catskin_importer_separator') == "comma") echo 'selected' ?>>Comma (,)</option>
-					<option value="semicolon" <?php if ($this->Shopp->Settings->get('catskin_importer_separator') == "semicolon") echo 'selected' ?>>semicolon (;)</option>
-					</select> <label for="catskin_importer_separator"></label></td>
+				<tr class="setting">
+					<td>
+						<label for="catskin_importer_imageformat"><?php _e('Image url format','Shopp'); ?></label>
+					</td>
+					<td>
+						<?= home_url('/') ?><input name="settings[catskin_importer_imageformat]" value="<?php echo $this->Shopp->Settings->get('catskin_importer_imageformat') ?>" id="catskin_importer_imageformat" onchange="update_required();" size="20">
+						<span class="help">eg: http://www.test.com/img/{val}.jpg</span>
+					</td>
 				</tr>
-				<tr>
-					<td style="padding:5px; width:300px; vertical-align:top;"><b><label><?php _e('Image url format','Shopp'); ?>:</label></b></td>
-					<td style="padding:5px; width:auto; vertical-align:top;"><label for="catskin_importer_imageformat"><?= home_url('/') ?><input name="settings[catskin_importer_imageformat]" value="<?php echo $this->Shopp->Settings->get('catskin_importer_imageformat') ?>" id="catskin_importer_imageformat" onchange="javascript:update_required();" size="70">
-					</label> <small>eg: http://www.test.com/img/{val}.jpg</small></td>
-				</tr>
+				<? $this->display_setting('catskin_importer_empty_first','Empty existing products prior to import?') ?>
+				<? $this->display_setting('catskin_importer_clear_categories','Clear all existing categories prior to import?') ?>
+				<?// $this->display_setting('catskin_importer_match_categories','Try to match categories to existing categories regardless of heirarchy?') ?>
+				<? $this->display_setting('catskin_importer_create_categories','Create new categories if existing category cannot be found?') ?>
+				<?// $this->display_setting('catskin_importer_create_products_without_categories','Only import item if category is found?') ?>
+				<? $this->display_setting('catskin_importer_clear_prices','If Product exists, clear existing pricelines (Variations) prior to import?') ?>
+				<? $this->display_setting('catskin_importer_do_not_alter_additional_details','if Checked, DO NOT alter product\'s existing Descriptions and Images...') ?>
+				<? $this->display_setting('catskin_importer_import_only_products_with_images','Import only products that have images?') ?>
+				<? $this->display_setting('catskin_importer_remove_image_paths','Strip file paths from image filenames?') ?>
+				<? $this->display_setting('catskin_importer_force_image_import','Force re-load of images?') ?>
+				<? $this->display_setting('catskin_importer_auto','Daily auto-import using these settings?') ?>
+				<? $this->display_setting('catskin_importer_send_email','Send email reports?') ?>
+
 			</table>
-			<? $this->display_setting('catskin_importer_empty_first','Empty existing products prior to import?') ?>
-			<? $this->display_setting('catskin_importer_clear_categories','Clear all existing categories prior to import?') ?>
-			<?// $this->display_setting('catskin_importer_match_categories','Try to match categories to existing categories regardless of heirarchy?') ?>
-			<? $this->display_setting('catskin_importer_create_categories','Create new categories if existing category cannot be found?') ?>
-			<!-- <? $this->display_setting('catskin_importer_create_products_without_categories','Only import item if category is found?') ?>	 -->
-			<? $this->display_setting('catskin_importer_clear_prices','If Product exists, clear existing pricelines (Variations) prior to import?') ?>
-			<? $this->display_setting('catskin_importer_do_not_alter_additional_details','if Checked, DO NOT alter product\'s existing Descriptions and Images...') ?>
-			<? $this->display_setting('catskin_importer_import_only_products_with_images','Import only products that have images?') ?>
-			<? $this->display_setting('catskin_importer_remove_image_paths','Strip file paths from image filenames?') ?>
-			<? $this->display_setting('catskin_importer_force_image_import','Force re-load of images?') ?>
-			<? $this->display_setting('catskin_importer_auto','Daily auto-import using these settings?') ?>
-			<? $this->display_setting('catskin_importer_send_email','Send email reports?') ?>
-
 		</div>
+
 		<div>
 			<p>
 				Auto import is next scheduled for <?= date('H:i e, D F Y', wp_next_scheduled( 'shopp_auto_import' ) ) ?>
@@ -256,7 +337,7 @@
 					$existing_map = $object_context->Shopp->Settings->get('catskin_importer_column_map');
 					$output = "";
 					$catskin_importer_type = $existing_map[$column_number]['type'];
-					$output .= "<select class='field-type-selector' name='settings[catskin_importer_column_map][{$column_number}][type]'  onchange='javascript:update_required();'>";
+					$output .= "<select class='field-type-selector' name='settings[catskin_importer_column_map][{$column_number}][type]'  onchange='update_required();'>";
 					$output .= "<option value='' ".(''==$catskin_importer_type?'selected=selected':'').">Don't Import</option>";
 					$output .= "<option value='id' ".('id'==$catskin_importer_type?'selected=selected':'').">Product Identifier</option>";
 					$output .= "<option value='category' ".('category'==$catskin_importer_type?'selected=selected':'').">Category(s) [Slash Delimited Text]</option>";
@@ -288,7 +369,7 @@
 					$output .= "<option value='spec' ".('spec'==$catskin_importer_type?'selected="selected"':'').">Spec [Text]</option>";
 					$output .= "<option value='weight' ".('weight'==$catskin_importer_type?'selected="selected"':'').">Weight [Text]</option>";
 					$output .= "</select>";
-					$output .= "<input type='text' class='catskin_variation_label_editor' id='catskin_importer_column_map_label_{$column_number}' name='settings[catskin_importer_column_map][{$column_number}][label]' value='".$existing_map[$column_number]['label']."'  style='display:none;'  onchange='javascript:update_required();'/><label for='settings[catskin_importer_column_map][{$column_number}][label]' style='display:none;'>Variation Name</label>";
+					$output .= "<input type='text' class='catskin_variation_label_editor' id='catskin_importer_column_map_label_{$column_number}' name='settings[catskin_importer_column_map][{$column_number}][label]' value='".$existing_map[$column_number]['label']."'  style='display:none;'  onchange='update_required();'/><label for='settings[catskin_importer_column_map][{$column_number}][label]' style='display:none;'>Variation Name</label>";
 					return $output;
 				}
 				// $filename = $this->Shopp->Settings->get('catskin_importer_file');
@@ -364,12 +445,11 @@
 					$('#imported-rows').append("<div style='clear:both;'></div>");
 				}
 
-				function view_error() {
+				function view_error(response) {
 					$('#spi-ajax-loader').hide('slow');
 					$('#run-spi-import-now').attr("value","An Error Occured... Update Importer Settings before trying again...");
 					$('#spi-show-when-importing').hide('fast');
 					$("#error-show").show('fast').append(response);
-
 				}
 
 				function view_after_all_rows_imported() {
@@ -394,8 +474,8 @@
 							$("#imported-rows").append(response);
 							import_products();
 						},
-						error: function(response){
-							view_error();
+						error: function(xhr){
+							view_error(xhr.responseText);
 						}
 					});
 				}
@@ -413,10 +493,10 @@
 							$("#imported-rows").append(response);
 							$("#imported-rows").append("<h3>Uploading Images...</h3>");
 							$("#imported-rows").append("<p>Sit back, relax, grab a coffee...</p>");
-							next_image();
+							// next_image();
 						},
-						error: function(response){
-							view_error();
+						error: function(xhr){
+							view_error(xhr.responseText);
 						}
 					});
 				}
@@ -444,6 +524,7 @@
 							}
 						},
 						error: function(response){
+							// view_error(xhr.responseText);
 							// view_error(response);
 								$("#imported-rows").append(response);
 								next_image();
@@ -599,7 +680,7 @@
 	}
 
 	function perform_checks() {
-		var is_importing_now = "<?php echo print_r(isset($importing_now)?"YES":"NO",true); ?>";
+		var is_importing_now = "<?php echo print_r( isset( $importing_now )? 'YES' : 'NO', true ); ?>";
 		if (is_importing_now == "NO") {
 			does_val = validate();
 			if (does_val === true) {
