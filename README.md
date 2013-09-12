@@ -4,7 +4,7 @@
 
 *Originally forked from Catskin Studios shopp_importer plugin*
 
-Version: 1.0 - **Compatible with Shopp up to version 1.1.9**
+Version: 1.1 - **Compatible with Shopp version 1.2.x - 1.2.5-1.2.9 recommended**
 
 * Customized for importing EDGE inventory tracking software's CSV exports.
 
