@@ -854,39 +854,34 @@ HTML;
 		$this->tag_map = null;
 		$this->category_map = null;
 		$this->image_map = null;
-		$tag_counter = 0;
-		$category_counter = 0;
-		$variation_counter = 0;
-		$image_counter = 0;
-		$spec_counter = 0;
 		$saved_column_map = $this->Shopp->Settings->get('catskin_importer_column_map');
-		for ($col_index = 0; $col_index < $this->Shopp->Settings->get('catskin_importer_column_count'); $col_index++) {
-			if ($saved_column_map[$col_index]["type"] == 'tag') {
-				$tag_counter++;
-				$this->column_map[$col_index] = $saved_column_map[$col_index]["type"].$tag_counter;
-				$this->tag_map[] = $saved_column_map[$col_index]["type"].$tag_counter;
-			 }else if ($saved_column_map[$col_index]["type"] == 'spec') {
-				//echo $saved_column_map[$col_index]["type"].'<br/>';
-				$spec_counter++;
-				$this->column_map[$col_index] = $saved_column_map[$col_index]["type"].$spec_counter;
-				$this->spec_map[] = $saved_column_map[$col_index]["type"].$spec_counter;
-			} else if ($saved_column_map[$col_index]["type"] == 'variation') {
-				$variation_counter++;
-				$this->column_map[$col_index] = $saved_column_map[$col_index]["label"];
-				$this->variation_map[] = $saved_column_map[$col_index]["label"];
-			} else if ($saved_column_map[$col_index]["type"] == 'category') {
-				$category_counter++;
-				$this->column_map[$col_index] = $saved_column_map[$col_index]["type"].$category_counter;
-				$this->category_map[] = $saved_column_map[$col_index]["type"].$category_counter;
-			} else if ($saved_column_map[$col_index]["type"] == 'image') {
-				$image_counter++;
-				$this->column_map[$col_index] = $saved_column_map[$col_index]["type"].$image_counter;
-				$this->image_map[] = $saved_column_map[$col_index]["type"].$image_counter;
-			} else if ($saved_column_map[$col_index]["type"] != '') {
-				$this->column_map[$col_index] = $saved_column_map[$col_index]["type"];
+		for ( $col_index = 0; $col_index < count( $saved_column_map ); $col_index ++ )
+		{
+			$type = &$saved_column_map[$col_index]["type"];
+			switch( $type )
+			{
+				case '':
+					break;
+				case 'tag':
+					$this->tag_map[] = $this->column_map[$col_index] = $type.(count($this->tag_map)+1);
+					break;
+				case 'spec':
+					//echo $type.'<br/>';
+					$this->spec_map[] = $this->column_map[$col_index] = $type.(count($this->spec_map)+1);
+					break;
+				case 'variation':
+					$this->variation_map[] = $this->column_map[$col_index] = $type.(count($this->variation_map)+1);
+					break;
+				case 'category':
+					$this->category_map[] = $this->column_map[$col_index] = $type.(count($this->category_map)+1);
+					break;
+				case 'image':
+					$this->image_map[] = $this->column_map[$col_index] = $type.(count($this->image_map)+1);
+					break;
+				default:
+					$this->column_map[$col_index] = $type;
 			}
 		}
-
 		$this->column_map = array_flip($this->column_map);
 		// HACK to use sk as ID
 		$this->column_map['id'] = $this->column_map['sku'];
