@@ -465,82 +465,30 @@ class shopp_product_importer {
 		<?
 	}
 
-
 	function truncate_all_prior_to_import() {
-		$this->log('truncate_all_prior_to_import');
-		global $wpdb;
+
 		if ($this->Shopp->Settings->get('catskin_importer_empty_first') == 'yes') {
-			$query = "	TRUNCATE TABLE wp_shopp_tag;";
-			$result = $wpdb->query($query);
-			$query = "	TRUNCATE TABLE wp_shopp_price;";
-			$result = $wpdb->query($query);
-			$query = "	TRUNCATE TABLE wp_shopp_product;";
-			$result = $wpdb->query($query);
-			$query = "	TRUNCATE TABLE wp_shopp_catalog;";
-			$result = $wpdb->query($query);
-			$query = "	TRUNCATE TABLE wp_shopp_edge_catalog;";
-			$result = $wpdb->query($query);
-			$query = "	TRUNCATE TABLE wp_shopp_asset;";
-			$result = $wpdb->query($query);
-			$query = "	DELETE FROM wp_shopp_meta WHERE type='spec' OR type='image';";
-			$result = $wpdb->query($query);
-		}
-
-		$query = " CREATE TABLE IF NOT EXISTS `{$wpdb->prefix}shopp_edge_category` (
-		  `id` bigint(20) unsigned NOT NULL,
-		  `parent` bigint(20) unsigned NOT NULL DEFAULT '0',
-		  `name` varchar(255) NOT NULL DEFAULT '',
-		  `slug` varchar(64) NOT NULL DEFAULT '',
-		  `uri` varchar(255) NOT NULL DEFAULT '',
-		  `description` text NOT NULL,
-		  `spectemplate` enum('off','on') NOT NULL,
-		  `facetedmenus` enum('off','on') NOT NULL,
-		  `variations` enum('off','on') NOT NULL,
-		  `pricerange` enum('disabled','auto','custom') NOT NULL,
-		  `priceranges` text NOT NULL,
-		  `specs` text NOT NULL,
-		  `options` text NOT NULL,
-		  `prices` text NOT NULL,
-		  `priority` int(10) NOT NULL DEFAULT '0',
-		  `created` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
-		  `modified` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
-		  PRIMARY KEY (`id`),
-		  KEY `parent` (`parent`)
-		); ";
-		$result = $wpdb->query($query);
-
-		$query = " CREATE TABLE IF NOT EXISTS `{$wpdb->prefix}shopp_edge_catalog` (
-		  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-		  `product` bigint(20) unsigned NOT NULL DEFAULT '0',
-		  `parent` bigint(20) unsigned NOT NULL DEFAULT '0',
-		  `type` enum('category','tag') NOT NULL,
-		  `priority` int(10) NOT NULL DEFAULT '0',
-		  `created` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
-		  `modified` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
-		  PRIMARY KEY (`id`),
-		  KEY `product` (`product`),
-		  KEY `assignment` (`parent`,`type`)
-		);";
-		$result = $wpdb->query($query);
-
-		$query = " CREATE TABLE IF NOT EXISTS `{$wpdb->prefix}shopp_edge_category_map` (
-		  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-		  `category` bigint(20) unsigned NOT NULL DEFAULT '0',
-		  `edge_category` bigint(20) unsigned NOT NULL DEFAULT '0',
-		  `created` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
-		  `modified` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
-		  PRIMARY KEY (`id`),
-		  KEY `product` (`category`),
-		  KEY `assignment` (`edge_category`)
-		);";
-		$result = $wpdb->query($query);
-
-		if ($this->Shopp->Settings->get('catskin_importer_clear_categories') == 'yes') {
-			// $query = "	TRUNCATE TABLE wp_shopp_category;";
-			// $result = $wpdb->query($query);
-			$query = "	TRUNCATE TABLE wp_shopp_edge_category;";
-			$result = $wpdb->query($query);
-
+			global $wpdb;
+			while( count( $shopp_product_posts = get_posts( array(
+				'post_type'        => 'shopp_product',
+				'post_status'      => 'any',
+				'suppress_filters' => true,
+				'posts_per_page'   => 100,
+			) ) ) > 0 )
+			{
+				foreach( $shopp_product_posts as $product )
+					wp_delete_post( $product->ID, true );
+			}
+			foreach( array(
+					'wp_shopp_index',
+					'wp_shopp_price',
+					'wp_shopp_asset',
+					'wp_shopp_summary',
+				) as $table )
+			{
+				$wpdb->query( "TRUNCATE TABLE $table;" );
+			}
+			$wpdb->query( "DELETE FROM wp_shopp_meta WHERE type='spec' OR type='image' OR type='meta';" );
 		}
 	}
 
@@ -556,8 +504,10 @@ class shopp_product_importer {
 	function truncate_prices_for_product($product_id) {
 		global $wpdb;
 		if ($this->Shopp->Settings->get('catskin_importer_clear_prices') == 'yes') {
-			$query = " DELETE FROM wp_shopp_price WHERE product='{$product_id}'";
-			$result = $wpdb->get_var($query);
+			$result = $wpdb->get_var( "DELETE FROM wp_shopp_price WHERE product='{$product_id}'" );
+			var_dump($result);
+			echo "remove meta too - TODO";
+			//$result = $wpdb->get_var( "DELETE FROM wp_shopp_meta WHERE context='price' AND parent='{$result}'" );
 		}
 		return $result;
 	}
