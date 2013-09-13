@@ -1,6 +1,6 @@
 <?php
 /**
-  	Copyright: Copyright © 2010 Catskin Studio
+  	Copyright: Copyright ï¿½ 2010 Catskin Studio
 	Licence: see index.php for full licence details
  */
 ?>
@@ -271,14 +271,21 @@ class spi_model {
 			} else {
 				$description = $map_product->description_text;
 			}
-
-			if ($id = $this->product_exists( $map_product->sku )) {
-				$add_products = $this->update_wp_product($map_product,$description);
-				$update_products = $add_products + $update_products;
+			// var_dump( $map_product->sku, $this->product_exists( $map_product->sku ) )
+			if ($map_product->id = $this->product_exists( $map_product->sku )) {
+				$this->update_wp_product($map_product,$description);
+				$updated_products[] = $map_product->id;
 			} else {
 				$insert_products[$map_product->id] = $map_product->id = $this->create_wp_product($map_product,$description);
 				$this->spi->result['products'][] = $map_product->sku;
 			}
+
+			// $this->create_new_shopp_product_meta( $map_product, $map_product->id );
+
+
+
+			// var_dump($this->spi->result, $update_products, $insert_products)
+
 
 			// foreach ($map_product->specs as $spec) $specs[] = $this->create_specs_sql($spec);
 
@@ -290,53 +297,59 @@ class spi_model {
 
 			foreach ($map_product->prices as $price) {
 				$price->product = $map_product->id;
-				$result = $wpdb->insert( "{$wpdb->prefix}shopp_price", get_object_vars( $price ) );
-			}
-
-			foreach ($this->categories as $id=>$category) {
-				$prefix = 'edge_';
-				if (!is_null($pos=strpos($id, $prefix)) ) { // if it's an edge category
-					if (is_null($category->exists)) {
-						$edge_index = substr($id, $pos+strlen($prefix));
-						if (!$edge_categories[$edge_index]) {
-							$edge_categories[$edge_index] = $this->create_category_sql($category);
-						}
-					}
-
-					foreach ($category->csv_product_ids as $csv_id) {
-						if ($csv_id == $map_product->csv_id) {
-							$edge_catalogs[] = $this->create_category_catalog_sql( $csv_id, $category->id );
-						}
-					}
-
-				} elseif (in_array($map_product->csv_id,$category->csv_product_ids,true)) {
-					if (array_key_exists($category->id, $used_categories) === false && is_null($category->exists)) {
-
-						$used_categories[$category->id] = $category->id;
-						$categories[] = $this->create_category_sql($category);
-						$next_category_id++;
-					}
-
-					foreach ($category->csv_product_ids as $csv_id) {
-						if ($csv_id == $map_product->csv_id) {
-							$catalogs[] = $this->create_category_catalog_sql( $csv_id, $category->id );
-						}
-					}
+				$price_meta = $price->_meta;
+				unset( $price->_meta );
+				$wpdb->insert( "{$wpdb->prefix}shopp_price", get_object_vars( $price ) );
+				if( $price->type != 'N/A' ) {
+					$this->create_new_shopp_price_meta( $price_meta, $wpdb->insert_id );
 				}
 			}
 
-			if (count($map_product->tags) > 0) {
-				foreach ($map_product->tags as $tag) {
-					$tag_value = htmlentities($tag->value, ENT_QUOTES, "UTF-8");
-					if (array_key_exists($tag_value, $used_tags) === false) {
-						$used_tags[$tag_value] = $next_tag_id;
-						$tags[] = $this->create_tags_sql($next_tag_id,$next_tag_id);
-						$next_tag_id++;
+			// if (count($map_product->tags) > 0) {
+			// 	foreach ($map_product->tags as $tag) {
+			// 		$tag_value = htmlentities($tag->value, ENT_QUOTES, "UTF-8");
+			// 		if (array_key_exists($tag_value, $used_tags) === false) {
+			// 			$used_tags[$tag_value] = $next_tag_id;
+			// 			$tags[] = $this->create_tags_sql($next_tag_id,$next_tag_id);
+			// 			$next_tag_id++;
+			// 		}
+			// 		$catalogs[] = $this->create_tag_catalog_sql($map_product,$tag,$used_tags);
+			// 	}
+			// }
+		}
+
+		foreach ($this->categories as $id=>$category) {
+			$prefix = 'edge_';
+			if (!is_null($pos=strpos($id, $prefix)) ) { // if it's an edge category
+				if (is_null($category->exists)) {
+					$edge_index = substr($id, $pos+strlen($prefix));
+					if (!$edge_categories[$edge_index]) {
+						$edge_categories[$edge_index] = $this->create_category_sql($category);
 					}
-					$catalogs[] = $this->create_tag_catalog_sql($map_product,$tag,$used_tags);
+				}
+
+				foreach ($category->csv_product_ids as $csv_id) {
+					if ($csv_id == $map_product->csv_id) {
+						$edge_catalogs[] = $this->create_category_catalog_sql( $csv_id, $category->id );
+					}
+				}
+
+			} elseif (in_array($map_product->csv_id,$category->csv_product_ids,true)) {
+				if (array_key_exists($category->id, $used_categories) === false && is_null($category->exists)) {
+
+					$used_categories[$category->id] = $category->id;
+					$categories[] = $this->create_category_sql($category);
+					$next_category_id++;
+				}
+
+				foreach ($category->csv_product_ids as $csv_id) {
+					if ($csv_id == $map_product->csv_id) {
+						$catalogs[] = $this->create_category_catalog_sql( $csv_id, $category->id );
+					}
 				}
 			}
 		}
+
 		unset($spi_files);
 
 		$wpdb->show_errors();
@@ -413,10 +426,67 @@ class spi_model {
 
 	function truncate_prices_for_product($product_sku) {
 		global $wpdb;
-		$result = $wpdb->get_var( "DELETE FROM wp_shopp_price WHERE sku='{$product_sku}'" );
+		$price_row_ids = $wpdb->get_results( "SELECT id FROM {$wpdb->prefix}shopp_price WHERE sku='{$product_sku}'" );
+		$result = $wpdb->get_var( "DELETE FROM {$wpdb->prefix}shopp_price WHERE sku='{$product_sku}'" );
+		foreach( $price_row_ids as $price_row )
+		{
+			$result .= $wpdb->get_var( "DELETE FROM {$wpdb->prefix}shopp_meta WHERE parent='{$price_row->id}'" );
+		}
 		// TODO remove meta too
 		//$result = $wpdb->get_var( "DELETE FROM wp_shopp_meta WHERE context='price' AND parent='{$result}'" );
 		return $result;
+	}
+
+	function create_new_shopp_product_meta( $product, $post_id )
+	{
+		$product_meta_options = array(
+			'processing'	=> 'off',
+			'minprocess'	=> '1d',
+			'maxprocess'	=> '1d',
+			'options'		=> ( $product->options === '' ) ?
+				serialize(array()) : $product->options
+		);
+		foreach( $product_meta_options as $meta_name => $meta_value )
+		{
+			$this->create_wp_shopp_meta_row(
+				new ShoppProductMeta( null, array(
+					'name'		=> $meta_name,
+					'value'		=> $meta_value,
+					'parent'	=> $post_id
+				)
+			) );
+		}
+	}
+
+	function create_new_shopp_price_meta( $price_meta, $price_row_id )
+	{
+
+		// name: settings, options
+		// settings: dimensions -> weight
+		// 			recurring
+		// options: 1,2
+
+		$price_meta['settings'] = serialize( array( 'dimensions' => array( 'weight' => (float) $price_meta['weight'] ) ) );
+		unset( $price_meta['weight'] );
+
+		if( empty( $price_meta['options'] ) ) unset( $price_meta['options'] );
+
+		foreach( $price_meta as $meta_name => $meta_value )
+		{
+			$this->create_wp_shopp_meta_row(
+				new ShoppPriceMeta( null, array(
+					'name'		=> $meta_name,
+					'value'		=> $meta_value,
+					'parent'	=> $price_row_id
+				)
+			) );
+		}
+	}
+
+	function create_wp_shopp_meta_row( $new_meta_data )
+	{
+		global $wpdb;
+		return $wpdb->insert( "{$wpdb->prefix}shopp_meta", (array) $new_meta_data );
 	}
 
 	function remove_products($items){
@@ -514,7 +584,7 @@ class spi_model {
 	function update_wp_product( $map_product, $description )
 	{
 		return wp_update_post( array(
-			'ID'				=> $map_product->product_id,
+			'ID'				=> $map_product->id,
 	        'post_title'        => $map_product->name,
 	        'post_content'      => $description,
 	        'post_excerpt'		=> $map_product->summary
@@ -1165,7 +1235,11 @@ class spi_model {
 			'shipping'  => $row_data->spi_shipping ? $row_data->spi_shipping : 'off',
 			'tax'      	=> $row_data->spi_tax ? $row_data->spi_tax : 'off',
 			// TODO meta 'donation' 	=> $row_data->spi_donation ? $row_data->spi_donation : 'a:2:{s:3:"var";s:3:"off";s:3:"min";s:3:"off";}',
-			'sortorder'	=> (int) $row_data->spi_order ? $row_data->spi_order : 0
+			'sortorder'	=> (int) $row_data->spi_order ? $row_data->spi_order : 0,
+			'_meta'		=> array(
+				'weight'   	=> (float) $row_data->spi_weight,
+				'options'	=> null
+			)
 		));
 
 		$map_product->prices[] = $PriceRow;
