@@ -1096,15 +1096,7 @@ class spi_model {
 
 			if( $this->category_by_uri( $map_category->uri ) )
 			{
-				if( $this->Shopp->Settings->get('catskin_importer_match_categories') == 'yes' )
-				{
-					// ^ Currently does nothing
-					$this->categories[ $this->key_to_category_by_uri( $map_category->uri ) ]->csv_product_ids[] = $csv_product_id;
-				}
-				else
-				{
-					$this->categories[ $this->key_to_category_by_uri( $map_category->uri ) ]->csv_product_ids[] = $csv_product_id;
-				}
+				$this->categories[ $this->key_to_category_by_uri( $map_category->uri ) ]->csv_product_ids[] = $csv_product_id;
 			}
 			elseif( $this->Shopp->Settings->get( 'catskin_importer_create_categories' ) == 'yes' )
 			{

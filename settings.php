@@ -288,7 +288,6 @@
 				</tr>
 				<? $this->display_setting('catskin_importer_empty_first','Empty existing products prior to import?') ?>
 				<? $this->display_setting('catskin_importer_clear_categories','Clear all existing categories prior to import?') ?>
-				<?// $this->display_setting('catskin_importer_match_categories','Try to match categories to existing categories regardless of heirarchy?') ?>
 				<? $this->display_setting('catskin_importer_create_categories','Create new categories if existing category cannot be found?') ?>
 				<?// $this->display_setting('catskin_importer_create_products_without_categories','Only import item if category is found?') ?>
 				<? $this->display_setting('catskin_importer_clear_prices','If Product exists, clear existing pricelines (Variations) prior to import?') ?>
