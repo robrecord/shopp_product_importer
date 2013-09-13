@@ -30,8 +30,6 @@ class spi_model {
 
 	public $result = array();
 
-
-
 	function spi_model($spi) {
 		if($spi){
 			$this->spi = $spi;
@@ -45,7 +43,6 @@ class spi_model {
 	// !bookmark : Execution Functions
 	function execute() {
 
-		// xdebug_break();
 
 		//The link between CSV and Known Shopp Fields...
 		//Map them out so we can work with them
@@ -57,8 +54,6 @@ class spi_model {
 		//get_next_set selects all products in the table with the id returned by get_next_product
 
 		//process_set updates the status for the rows we've just used so we don't reuse them.
-
-		// -1
 
 		$this->spi->log('Filtering products');
 		while ( $p_row = $this->get_next_product( 0 ) ) {
@@ -76,9 +71,7 @@ class spi_model {
 		// 	$this->process_set( $p_row->spi_id, 20 );
 		// }
 
-
-
-		// //1 - Populate Variations
+		// // 1 - Populate Variations
 		// $this->spi->log('Processing products - Populate Variations');
 		// while ( $p_row = $this->get_next_product( 20 ) ) {
 		// 	$p_set = $this->get_next_set( $p_row->spi_id );
@@ -86,7 +79,7 @@ class spi_model {
 		// 	$this->process_set( $p_row->spi_id, 30 );
 		// }
 
-		//2 - Initialize Categories
+		// 2 - Initialize Categories
 		$this->spi->log('Processing products - Initialize Categories');
 		$this->categories = array();
 		while ( $p_row = $this->get_next_product( 10 ) ) {
@@ -97,13 +90,11 @@ class spi_model {
 
 		die("OK");
 
-
-		//3 - Initialize Products
+		// 3 - Initialize Products
 		$this->spi->log('Processing products - Initialize Products');
 		$base_id = $this->get_next_shopp_product_id();
 
 		while ( $p_row = $this->get_next_product( 40 ) ) {
-			$p_set = $this->get_next_set( $p_row->spi_id );
 			//Does the product already exist in shopp?
 			$existing_product = $this->product_exists( $p_row->spi_name, $p_row->spi_sku );
 			if ($existing_product) {
@@ -119,14 +110,12 @@ class spi_model {
 		}
 		$this->spi->log('Processing products - Initialize Prices');
 		//10 - Initialize Prices
-		// if (!empty($this->products)) {
 			foreach ($this->products as $map_product) {
 				$this->initialize_prices($map_product);
 			}
 			$this->process_all( 60 );
 			$this->spi->log(' execute-end');
 			return $this->products;
-		// } else echo('No products could be imported.<br>');
 	}
 	function execute_images() {
 		try {
@@ -288,9 +277,7 @@ class spi_model {
 				}
 
 				if ($id = $this->product_exists($map_product->name,$map_product->sku)) {
-					// var_dump( $id, $map_product->sku );
 					$add_products = $this->update_product_sql($map_product,$description);
-					//var_dump( $add_products );
 					$update_products = $add_products + $update_products;
 				} else {
 					$insert_products[] = $this->create_product_sql($map_product,$description);
@@ -394,7 +381,6 @@ class spi_model {
 			$this->spi->result['categories'] = $this->chunk_query($categories,$query);
 		}
 
-		// VAR_DUMP($edge_categories);
 		//Import Edge Categories
 		if (isset($edge_categories)) {
 			$query = " INSERT INTO {$wpdb->prefix}shopp_edge_category (id,parent,name,slug,uri,description,spectemplate,facetedmenus,variations,pricerange,priceranges,specs,options,prices,created,modified) VALUES %values%; ";
@@ -636,6 +622,7 @@ class spi_model {
 		//importer settings page and apply it to an array that we can use to understand the
 		//data being pulled in.
 		$map = $this->Shopp->Settings->get('catskin_importer_column_map');
+
 		//initialize counters
 		$column = 0;
 		$variation = 0;
@@ -957,7 +944,6 @@ class spi_model {
 				$cat_arrays[$id] = $cat_array;
 			}
 
-			// var_dump($cat_array);
 			$cat_arrays[$id] = implode('/',$cat_array);
 
 			// if ($mset['header'] !== 'category') {
@@ -1047,19 +1033,18 @@ class spi_model {
 	{
 		//initialize our arrays for reuse
 		$uri_array = array();
-		// var_dump($cat_array);
+
 		//reverse the array for ease of use
 		if ( ! is_array( $cat_array ) ) $cat_array = array( $cat_array );
 		array_reverse( $cat_array );
 
-		// var_dump ($cat_array);
 
-		for ( $i = 0; $i < sizeof( $cat_array ); $i ++ ) {
+		for ( $i = 0; $i < count( $cat_array ); $i ++ ) {
 			//build an array of category uri's we're going to use these as the
 			//unique identifier for categories
 			$uri_array[ $i ] = sanitize_title_with_dashes( strtr( $cat_array[ $i ], '/', '-' ) );
 		}
-		for ( $i = 0; $i < sizeof( $cat_array ); $i ++ ) {
+		for ( $i = 0; $i < count( $cat_array ); $i ++ ) {
 			$map_category = new map_category();
 			$map_category->name = 'spi_category';
 			$map_category->value = $cat_array[$i];
@@ -1071,15 +1056,16 @@ class spi_model {
 			$map_category->parent_id = $parent_index;
 			$map_category->csv_product_id = $csv_product_id;
 			$map_category->csv_product_ids[] = $csv_product_id;
+
 			$pop_array = $uri_array;
-			for( $j = 0; $j < ( sizeof( $cat_array ) - ( $i + 1 ) ); $j ++ ) {
+			for( $j = 0; $j < ( count( $cat_array ) - ( $i + 1 ) ); $j ++ ) {
 				array_pop( $pop_array );
 			}
 			$parent_pop_array = $uri_array;
-			for( $j = 0; $j < ( sizeof( $cat_array ) - ( $i ) ); $j ++ ) {
+			for( $j = 0; $j < ( count( $cat_array ) - ( $i ) ); $j ++ ) {
 				array_pop( $parent_pop_array );
 			}
-			if( sizeof( $pop_array ) == 1 ) {
+			if( count( $pop_array ) == 1 ) {
 				$map_category->parent_id = 0;
 			} else {
 				$map_category->parent_id = $parent_index;
@@ -1115,13 +1101,11 @@ class spi_model {
 				else
 					$cat_index++;
 
-				// var_dump($map_category);
 				if ($index)
 					$this->categories['edge_'.$index] = $map_category;
 				else
 					$this->categories[] = $map_category;
 			}
-			// var_dump($map_category);die;
 		}
 	}
 	// TODO:
