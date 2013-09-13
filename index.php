@@ -176,6 +176,25 @@ class shopp_product_importer {
 			//wp_schedule_event(mktime(17, 45, 0) + 86400, 'daily', 'shopp_auto_import_dev');
 			date_default_timezone_set($tz); // set the PHP timezone back the way it was
 
+			global $wpdb;
+
+			$create_order_only_items_table = <<<SQL
+CREATE TABLE IF NOT EXISTS `wp_shopp_order_only_items` (
+  `id` bigint(20) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `sku` varchar(100) NOT NULL,
+  KEY `sku` (`sku`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+SQL;
+			$create_order_only_cats_table = <<<SQL
+CREATE TABLE IF NOT EXISTS `wp_shopp_order_only_cats` (
+  `cat_id` int(11) NOT NULL,
+  UNIQUE KEY `cat_id` (`cat_id`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+SQL;
+			$wpdb->query($create_order_only_items_table);
+			$wpdb->query($create_order_only_cats_table);
+
 		}
 		/* This function is executed when the user deactivates the plugin */
 		function shopp_importer_deactivation()
