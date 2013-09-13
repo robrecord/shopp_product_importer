@@ -696,7 +696,7 @@ HTML;
 
 		if ($this->auto_import) return $result;
 
-		$this->map_categories();
+		// $this->map_categories();
 
 		exit();
 	}
