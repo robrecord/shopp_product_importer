@@ -113,15 +113,20 @@ class spi_model {
 				$base_id++;
 			}
 		}
+
 		// 4 - Initialize Prices
 		$this->spi->log('Processing products - Initialize Prices');
-			foreach ($this->products as $map_product) {
-				$this->initialize_prices($map_product);
-			}
-			$this->process_all( 60 );
-			$this->spi->log(' execute-end');
-			return $this->products;
+		foreach ($this->products as $map_product) {
+			$this->initialize_prices($map_product);
+		}
+
+
+
+		$this->process_all( 60 );
+
+		return $this->products;
 	}
+
 	function execute_images() {
 		try {
 			$this->initialize_map();
@@ -637,40 +642,40 @@ class spi_model {
 		$spec = 0;
 		// echo "Initialize_map<br>";
 		//Using $map array create a global field map based on the currently active CSV
-		foreach ($map as $item) {
-			//does the map item have a special power?
-			//Special power columns arent exclusive so we need to count
-			//how many of each special powers we have.
-			//$hidx holds the index conter for that special power
-			switch ($item['type']) {
-				case 'variation': $variation++; $hidx = $variation; break;
-				case 'spec': $spec++; $hidx = $spec; break;
-				case 'category': $category++; $hidx = $category; break;
-				case 'tag': $tag++; $hidx = $tag; break;
-				case 'image': $image++; $hidx = $image; break;
-				default: $hidx = '';
+		foreach ($map as $item)
+		{
+			if ($item['type'] !== '')
+			{
+				//does the map item have a special power?
+				//Special power columns arent exclusive so we need to count
+				//how many of each special powers we have.
+				//$hidx holds the index conter for that special power
+				switch ($item['type']) {
+					case 'variation': $variation++; $hidx = $variation; break;
+					case 'spec': $spec++; $hidx = $spec; break;
+					case 'category': $category++; $hidx = $category; break;
+					case 'tag': $tag++; $hidx = $tag; break;
+					case 'image': $image++; $hidx = $image; break;
+					default: $hidx = '';
+				}
+				//We handle variations by name for labeling purposes so instead of getting an index
+				//it's given a name
+				if ($item['type'] == 'variation' || $item['type'] == 'spec')
+					$column_header = 'spi_'.$item['label'];
+				else
+					$column_header = 'spi_'.$item['type'].$hidx;
+
+				$map = array('type'=>$item['type'],'label'=>$item['label'],'header'=>$column_header,'idx'=>$hidx);
+				// $this->map[] = $map;
+
+				// we use the condition here to help the hack below
+				if ($item['type'] !== 'id')
+					$this->map[] = $map;
+				// hack to make product identifier same as sku
+				if ($item['type'] == 'sku')
+					$this->map[] = array('type'=>'id','label'=>$item['label'],'header'=>'spi_id','idx'=>$hidx);
 			}
-			//We handle variations by name for labeling purposes so instead of getting an index
-			//it's given a name
-			if ($item['type'] == 'variation' || $item['type'] == 'spec')
-				$column_header = 'spi_'.$item['label'];
-			else
-				$column_header = 'spi_'.$item['type'].$hidx;
 
-
-			// echo $column_header.'<br/>';
-			$map = array('type'=>$item['type'],'label'=>$item['label'],'header'=>$column_header,'idx'=>$hidx);
-			// var_dump($map);
-			// $this->map[] = $map;
-
-			// we use the condition here to help the hack below
-			if ($item['type'] !== 'id')
-				$this->map[] = $map;
-			// hack to make product identifier same as sku
-			if ($item['type'] == 'sku')
-				$this->map[] = array('type'=>'id','label'=>$item['label'],'header'=>'spi_id','idx'=>$hidx);
-
-			// var_dump($item);
 		}
 		$this->global_spec_total = $spec;
 	}
@@ -852,8 +857,8 @@ class spi_model {
 					break;
 				case 'category':
 					//cat_string = the raw slash delimited category data
-					$cat_string = $this->get_mapped_var($csv_product_id,$mset['header']);
-					$cat_array = array(explode('/',$cat_string));
+					$cat_string = $this->get_mapped_var( $csv_product_id, $mset['header'] );
+					$cat_array = array( explode( '/', $cat_string ) );
 					break;
 			}
 
@@ -873,15 +878,16 @@ class spi_model {
 				} else unset($cat_array);
 				unset ($type);
 			}
-			if (isset($cat_array) && !empty($cat_array)) {
-				if (!$cat_string || $this->any_exist('spi_category',$csv_product_id) > 0) {
-					// var_dump($cat_array);
-					foreach ($cat_array as $index=>&$cats) {
-						if ($cats==array(0=>'')) echo "BAD";
-						$this->make_category($cats,$cat_index,$parent_index,$csv_product_id,($edge?$index:null));
+			if( isset( $cat_array ) && !empty( $cat_array ) )
+			{
+				if( ! $cat_string || $this->any_exist( 'spi_category', $csv_product_id ) > 0 )
+				{
+					foreach( $cat_array as $index => &$cats )
+					{
+						$this->make_category( $cats, $cat_index, $parent_index, $csv_product_id, ( $edge ? $index : null ) );
 					}
 				}
-				unset ($cat_array,$cat_string,$edge);
+				unset ( $cat_array, $cat_string, $edge );
 			}
 		}
 		$this->cat_index = $cat_index;
@@ -956,81 +962,6 @@ class spi_model {
 			// 	$mset['type'] = 'category';
 			// }
 			return $cat_arrays;
-		}
-	}
-
-	function make_edge_category( &$cat_array, &$cat_index, &$parent_index, &$csv_product_id, $index=null )
-	{ // not in use!
-
-		//initialize our arrays for reuse
-		$uri_array = array();
-		// var_dump($cat_array);die;
-		if ( !is_array( $cat_array ) ) $cat_array = array( $cat_array );
-		//reverse the array for ease of use
-		array_reverse( $cat_array );
-
-		var_dump( $cat_array );
-
-		for ( $i = 0; $i < sizeof( $cat_array ); $i ++ ) {
-			//build an array of category uri's we're going to use these as the
-			//unique identifier for categories
-			$uri_array[ $i ] = sanitize_title_with_dashes( strtr( $cat_array[ $i ], '/', '-' ) );
-		}
-		for ( $i = 0; $i < sizeof( $cat_array ); $i ++ ) {
-			$map_category = new map_category();
-			$map_category->name = 'spi_category';
-			$map_category->value = $cat_array[ $i ];
-			echo "  > slug : ", $map_category->slug = $uri_array[ $i ];
-			echo "  > id   : ", $map_category->id = ( $index > 0 ? $index : $cat_index );
-			echo "  > prnt : ", $map_category->parent_id = $parent_index;
-			$map_category->csv_product_id = $csv_product_id;
-			$map_category->csv_product_ids[] = $csv_product_id;
-			$pop_array = $uri_array;
-			for ( $j = 0; $j < ( sizeof( $cat_array ) - ( $i + 1 ) ); $j ++ ) {
-				array_pop( $pop_array );
-			}
-			$parent_pop_array = $uri_array;
-			for ( $j = 0; $j < ( sizeof( $cat_array ) - ( $i ) ); $j ++ ) {
-				array_pop( $parent_pop_array );
-			}
-			if ( sizeof( $pop_array ) == 1) {
-				$map_category->parent_id = 0;
-
-			} else {
-				$map_category->parent_id = $parent_index;
-			}
-			var_dump( $pop_array );die;
-			$map_category->uri = join( '/', $pop_array );
-			$map_category->parent_uri = join( '/', $parent_pop_array );
-
-			$existing_shopp_category = $this->category_exists( $map_category->uri, $index );
-
-			if ( ! is_null( $this->category_by_uri( $map_category->uri ) ) ) {
-				if ( $this->Shopp->Settings->get( 'catskin_importer_match_categories' ) == 'yes' ) {
-					// ^ Currently does nothing
-					$this->categories[ $this->key_to_category_by_uri( $map_category->uri ) ]->csv_product_ids[] = $csv_product_id;
-				} else {
-					$this->categories[ $this->key_to_category_by_uri( $map_category->uri ) ]->csv_product_ids[] = $csv_product_id;
-				}
-			} elseif ( $this->Shopp->Settings->get('catskin_importer_create_categories') == 'yes' ) {
-				if ( is_null( $this->category_by_uri( $map_category->parent_uri ) ) ) {
-					$map_category->parent_id = 0;
-				} else {
-					$parent_category = $this->category_by_uri( $map_category->parent_uri );
-					$map_category->parent_id = $parent_category->id;
-				}
-				if ( $existing_shopp_category ) {
-					$map_category->id = $existing_shopp_category->id;
-					$map_category->exists = true;
-					$map_category->parent_id = $existing_shopp_category->parent;
-				} else {
-					$cat_index ++;
-				}
-				// var_dump($map_category);
-				if ( $index ) $this->categories[ 'edge_' . $index ] = $map_category;
-				else $this->categories[] = $map_category;
-			}
-
 		}
 	}
 
