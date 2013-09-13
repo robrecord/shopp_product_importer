@@ -63,7 +63,7 @@ class spi_model {
 			$this->process_set( $p_row->spi_id, 10 );
 		}
 
-		// //4 - Initialize Variations
+		// // 0 - Initialize Variations
 		// $this->spi->log('Processing products - Initialize Variations');
 		// $this->variations = array();
 		// while ( $p_row = $this->get_next_product( 10 ) ) {
@@ -108,8 +108,8 @@ class spi_model {
 				$base_id++;
 			}
 		}
+		// 4 - Initialize Prices
 		$this->spi->log('Processing products - Initialize Prices');
-		//10 - Initialize Prices
 			foreach ($this->products as $map_product) {
 				$this->initialize_prices($map_product);
 			}
