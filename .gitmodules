@@ -1,0 +1,4 @@
+[submodule "shopp_migrate"]
+	path = shopp_migrate
+	url = /Users/robrecord/Shares/Google Drive/Projects/shopp_migrate
+	branch = master
