@@ -112,8 +112,6 @@ class spi_model {
 			$this->initialize_prices($map_product);
 		}
 
-
-
 		$this->process_all( 60 );
 
 		return $this->products;
