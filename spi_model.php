@@ -273,10 +273,10 @@ class spi_model {
 			}
 
 			if ($id = $this->product_exists( $map_product->sku )) {
-				$add_products = $this->update_product_sql($map_product,$description);
+				$add_products = $this->update_wp_product($map_product,$description);
 				$update_products = $add_products + $update_products;
 			} else {
-				$insert_products[] = $this->create_product_sql($map_product,$description);
+				$insert_products[$map_product->id] = $map_product->id = $this->create_wp_product($map_product,$description);
 				$this->spi->result['products'][] = $map_product->sku;
 			}
 
@@ -498,41 +498,27 @@ class spi_model {
 		}
 	}
 
-	function update_product_sql($map_product,$description)
+	function create_wp_product( $map_product, $description )
 	{
-		if ($map_product->name)
-			$values['name'] = "'".mysql_real_escape_string($map_product->name) ."'";
-		if ($map_product->summary)
-			$values['summary'] = "'".mysql_real_escape_string($map_product->summary) ."'";
-		if (!empty($description))
-			$values['description'] = "'".mysql_real_escape_string($description) ."'";
-		/*Existing method of setting the variations on|off field*/
-		//$values .= (strlen($map_product->options) > 0)?"'on',":"'off',";
-		/*New Method of setting variations on|off field*/
-		if ($map_product->has_variations)
-			$values['variations'] = "'".mysql_real_escape_string($this->defval($map_product->has_variations,'off')) ."'";
-		if ($map_product->options)
-			$values['options'] = "'".mysql_real_escape_string($map_product->options)."'";
-		$values['modified'] = "CURDATE()";
-		return array($map_product->id => $values);
+		return wp_insert_post( array(
+	        'post_title'        => $map_product->name,
+	        'post_content'      => $description,
+	        'post_excerpt'		=> $map_product->summary,
+	        'post_status'       => 'publish',
+	        'post_type'			=> 'shopp_product',
+	        'comment_status'	=> 'closed',
+	        'ping_status'		=> 'closed'
+	    ) );
 	}
 
-	function create_product_sql($map_product,$description)
+	function update_wp_product( $map_product, $description )
 	{
-		$values  = "'".mysql_real_escape_string($map_product->id) ."',";
-		$values .= "'".mysql_real_escape_string($map_product->name) ."',";
-		$values .= "'".mysql_real_escape_string($this->defval($map_product->slug,sanitize_title($map_product->name))) ."',";
-		$values .= "'".mysql_real_escape_string($map_product->summary) ."',";
-		$values .= "'".mysql_real_escape_string($description) ."',";
-		$values .= "'".mysql_real_escape_string($this->defval($map_product->published,'on')) ."',";
-		$values .= "'".mysql_real_escape_string($this->defval($map_product->featured,'off')) ."',";
-		/*Existing method of setting the variations on|off field*/
-		//$values .= (strlen($map_product->options) > 0)?"'on',":"'off',";
-		/*New Method of setting variations on|off field*/
-		$values .= "'".mysql_real_escape_string($this->defval($map_product->has_variations,'off')) ."',";
-		$values .= "'".mysql_real_escape_string($map_product->options)."',";
-		$values .= "CURDATE(),CURDATE()";
-		return "($values)";
+		return wp_update_post( array(
+			'ID'				=> $map_product->product_id,
+	        'post_title'        => $map_product->name,
+	        'post_content'      => $description,
+	        'post_excerpt'		=> $map_product->summary
+	    ) );
 	}
 
 	function create_specs_sql($id,$spec)
@@ -544,29 +530,29 @@ class spi_model {
 		$specs .= "CURDATE(),CURDATE()";
 		return "($specs)";
 	}
-	function create_prices_sql($price)
-	{
-		$prices  = "'".mysql_real_escape_string($price['product'])."',";
-		$prices .= "'".mysql_real_escape_string($price['options'])."',";
-		$prices .= "'".mysql_real_escape_string($price['optionkey'])."',";
-		$prices .= "'".mysql_real_escape_string($price['label'])."',";
-		$prices .= "'".mysql_real_escape_string($price['context'])."',";
-		$prices .= "'".mysql_real_escape_string($price['type'])."',";
-		$prices .= "'".mysql_real_escape_string($price['sku'])."',";
-		$prices .= "'".mysql_real_escape_string($price['price'])."',";
-		$prices .= "'".mysql_real_escape_string($price['saleprice'])."',";
-		$prices .= "'".mysql_real_escape_string($price['weight'])."',";
-		$prices .= "'".mysql_real_escape_string($price['shipfee'])."',";
-		$prices .= "'".mysql_real_escape_string($price['stock'])."',";
-		$prices .= "'".mysql_real_escape_string($price['inventory'])."',";
-		$prices .= "'".mysql_real_escape_string($price['sale'])."',";
-		$prices .= "'".mysql_real_escape_string($price['shipping'])."',";
-		$prices .= "'".mysql_real_escape_string($price['tax'])."',";
-		$prices .= "'".mysql_real_escape_string($price['donation'])."',";
-		$prices .= "'".mysql_real_escape_string($price['sortorder'])."',";
-		$prices .= "CURDATE(),CURDATE()";
-		return "($prices)";
-	}
+	// function create_prices_sql($price)
+	// {
+	// 	$prices  = "'".mysql_real_escape_string($price['product'])."',";
+	// 	$prices .= "'".mysql_real_escape_string($price['options'])."',";
+	// 	$prices .= "'".mysql_real_escape_string($price['optionkey'])."',";
+	// 	$prices .= "'".mysql_real_escape_string($price['label'])."',";
+	// 	$prices .= "'".mysql_real_escape_string($price['context'])."',";
+	// 	$prices .= "'".mysql_real_escape_string($price['type'])."',";
+	// 	$prices .= "'".mysql_real_escape_string($price['sku'])."',";
+	// 	$prices .= "'".mysql_real_escape_string($price['price'])."',";
+	// 	$prices .= "'".mysql_real_escape_string($price['saleprice'])."',";
+	// 	$prices .= "'".mysql_real_escape_string($price['weight'])."',";
+	// 	$prices .= "'".mysql_real_escape_string($price['shipfee'])."',";
+	// 	$prices .= "'".mysql_real_escape_string($price['stock'])."',";
+	// 	$prices .= "'".mysql_real_escape_string($price['inventory'])."',";
+	// 	$prices .= "'".mysql_real_escape_string($price['sale'])."',";
+	// 	$prices .= "'".mysql_real_escape_string($price['shipping'])."',";
+	// 	$prices .= "'".mysql_real_escape_string($price['tax'])."',";
+	// 	$prices .= "'".mysql_real_escape_string($price['donation'])."',";
+	// 	$prices .= "'".mysql_real_escape_string($price['sortorder'])."',";
+	// 	$prices .= "CURDATE(),CURDATE()";
+	// 	return "($prices)";
+	// }
 
 
 	function create_category_sql($category)
@@ -1116,7 +1102,7 @@ class spi_model {
 			}
 		}
 	}
-	function initialize_prices($map_product) {
+	function initialize_prices( &$map_product ) {
 		// if( count( unserialize( $map_product->options ) ) > 0 )
 		// {
 		// 	$combinations = array();
@@ -1164,26 +1150,26 @@ class spi_model {
 		$PriceRow = new ShoppPriceRow( null, array(
 			'product'  	=> $map_product->id,
 			'label'    	=> "Price & Delivery",
-			// 'context'  	=> 'product',
+			'context'  	=> 'product',
 			'type'     	=> $row_data->spi_type ? $row_data->spi_type : 'Shipped',
 			'sku'      	=> $row_data->spi_sku,
 			'price'    	=> (float) $row_data->spi_price,
-			'saleprice'	=> (float) $row_data->spi_saleprice,
-			'weight'   	=> (float) $row_data->spi_weight,
+			'saleprice'	=> (float) ($row_data->spi_saleprice === $row_data->spi_price) ? 0 : $row_data->spi_saleprice,
+			// TODO meta 'weight'   	=> (float) $row_data->spi_weight,
 			'shipfee'  	=> (float) $row_data->spi_shipfee,
-			'stock'    	=> (int) $row_data->spi_stock,
+			'stock'    	=> (int) ( $row_data->spi_stock ? $row_data->spi_stock : 1 ),
 			// 'inventory'	=> isset( $groups ) ? "off" : $this->defval( $row_data->spi_inventory, "off" ),
 			'inventory' => $row_data->spi_inventory ? $row_data->spi_inventory : 'on',
 			'sale'     	=> $row_data->spi_sale ? $row_data->spi_sale : 'off',
 			// 'shipping' 	=> isset( $groups ) ? "on" : $this->defval( $row_data->spi_shipping, "on" ),
 			'shipping'  => $row_data->spi_shipping ? $row_data->spi_shipping : 'off',
 			'tax'      	=> $row_data->spi_tax ? $row_data->spi_tax : 'off',
-			'donation' 	=> $row_data->spi_donation ? $row_data->spi_donation : 'a:2:{s:3:"var";s:3:"off";s:3:"min";s:3:"off";}',
+			// TODO meta 'donation' 	=> $row_data->spi_donation ? $row_data->spi_donation : 'a:2:{s:3:"var";s:3:"off";s:3:"min";s:3:"off";}',
 			'sortorder'	=> (int) $row_data->spi_order ? $row_data->spi_order : 0
 		));
 
+		$map_product->prices[] = $PriceRow;
 
-		$this->products[$map_product->id]->prices[] = $PriceRow;
 		// if (isset($combinations)) {
 		// 	foreach ($combinations as $combo) {
 		// 		unset($row_data);
