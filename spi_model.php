@@ -1032,8 +1032,9 @@ class spi_model {
 
 	*/
 
-	function initialize_product(&$map_product,$csv_product_id,$shopp_product_id) {
+	function initialize_product( $csv_product_id, $shopp_product_id=null ) {
 
+		$map_product = new map_product();
 		$this->global_spec_counter = 1;
 		if( $shopp_product_id ) $map_product->id = $shopp_product_id;
 		$map_product->csv_id = $csv_product_id;
