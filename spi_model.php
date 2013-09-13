@@ -280,7 +280,7 @@ class spi_model {
 				$this->spi->result['products'][] = $map_product->sku;
 			}
 
-			foreach ($map_product->specs as $spec) $specs[] = $this->create_specs_sql($spec);
+			// foreach ($map_product->specs as $spec) $specs[] = $this->create_specs_sql($spec);
 
 			// Prices
 			if ( $this->Shopp->Settings->get('catskin_importer_clear_prices') == 'yes' ) {
