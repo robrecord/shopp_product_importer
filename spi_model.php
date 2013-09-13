@@ -1035,77 +1035,44 @@ class spi_model {
 	function initialize_product(&$map_product,$csv_product_id,$shopp_product_id) {
 
 		$this->global_spec_counter = 1;
-		$map_product->id = $shopp_product_id;
+		if( $shopp_product_id ) $map_product->id = $shopp_product_id;
 		$map_product->csv_id = $csv_product_id;
 		$cat_index = $this->cat_index;
 		foreach ($this->map as $mset) {
 			$parent_index = 0;
-			switch ($mset['type']) {
-				case 'description':
-					$map_product->description = $this->get_mapped_var($csv_product_id,$mset['header']);
-					break;
-				case 'descriptiontext':
-					$map_product->description_text = $this->get_mapped_var($csv_product_id,$mset['header']);
-					break;
-				case 'featured':
-					$map_product->featured = $this->get_mapped_var($csv_product_id,$mset['header']);
-					break;
+			$value = $this->get_mapped_var( $csv_product_id, $mset['header'] );
+			switch ($mset['type'])
+			{
 				case 'image':
 					$map_image = new map_image();
 					$map_image->name =  $mset['header'];
-					$map_image->value = $this->get_mapped_var($csv_product_id,$mset['header']);
+					$map_image->value = $value;
 					if (strlen($map_image->value) > 0) $map_product->images[] = $map_image;
 					break;
-				case 'inventory':
-					$map_product->inventory = $this->get_mapped_var($csv_product_id,$mset['header']);
-					break;
-				case 'name':
-					$map_product->name = $this->get_mapped_var($csv_product_id,$mset['header']);
-					break;
 				case 'price':
-					$map_product->price = $this->parse_float($this->get_mapped_var($csv_product_id,$mset['header']));
+				case 'weight':
+					$map_product->{$mset['type']} = $this->parse_float($value);
 					break;
-				case 'published':
-					$map_product->published = $this->get_mapped_var($csv_product_id,$mset['header']);
-					break;
-				case 'sale':
-					$map_product->sale = $this->get_mapped_var($csv_product_id,$mset['header']);
+				case 'descriptiontext':
+					$map_product->description_text = $value;
 					break;
 				case 'saleprice':
-					$map_product->sale_price = $this->parse_float($this->get_mapped_var($csv_product_id,$mset['header']));
+					$map_product->sale_price = $this->parse_float($value);
 					break;
 				case 'shipfee':
-					$map_product->ship_fee = $this->parse_float($this->get_mapped_var($csv_product_id,$mset['header']));
-					break;
-				case 'sku':
-					$map_product->sku = $this->get_mapped_var($csv_product_id,$mset['header']);
-					break;
-				case 'slug':
-					$map_product->slug = $this->get_mapped_var($csv_product_id,$mset['header']);
-					break;
-				case 'order':
-					$map_product->order = $this->get_mapped_var($csv_product_id,$mset['header']);
-					break;
-				case 'stock':
-					$map_product->stock = $this->get_mapped_var($csv_product_id,$mset['header']);
-					break;
-				case 'summary':
-					$map_product->summary = $this->get_mapped_var($csv_product_id,$mset['header']);
+					$map_product->ship_fee = $this->parse_float($value);
 					break;
 				case 'tag':
 					$map_tag = new map_tag();
 					$map_tag->name =  $mset['header'];
-					$map_tag->value = $this->get_mapped_var($csv_product_id,$mset['header']);
+					$map_tag->value = $value;
 					if (strlen($map_tag->value) > 0) $map_product->tags[] = $map_tag;
 					break;
-				case 'tax':
-					$map_product->tax = $this->get_mapped_var($csv_product_id,$mset['header']);
-					break;
 				case 'pricetype':
-					$map_product->price_type = $this->get_mapped_var($csv_product_id,$mset['header']);
+					$map_product->price_type = $value;
 					break;
 				case 'variation':
-					if ($this->any_exist($mset['header'],$csv_product_id) > 0) {
+					if ($this->any_exist( $mset['header'], $csv_product_id) > 0 ) {
 						$map_variation = new map_variation();
 						$map_variation->name =  $mset['header'];
 						$this->global_variation_counter++;
@@ -1114,38 +1081,28 @@ class spi_model {
 						$map_product->variations[] = $map_variation;
 					}
 					break;
-				case 'weight':
-					$map_product->weight = $this->parse_float($this->get_mapped_var($csv_product_id,$mset['header']));
-					break;
 				case 'spec':
-
-				 	  $map_spec = new map_spec();
-						$map_spec->name =  substr($mset['header'],4);
-						$map_spec->value = $this->get_mapped_var($csv_product_id,'spi_spec'.$this->global_spec_counter);
-					  //echo 'spi_spec'.$this->global_spec_counter.'<br>';
-						$map_product->specs[] = $map_spec;
-						$this->global_spec_counter++;
-
-					//}
+			 		$map_spec = new map_spec();
+					$map_spec->name =  substr($mset['header'],4);
+					$map_spec->value = $this->get_mapped_var( $csv_product_id, 'spi_spec'.$this->global_spec_counter );
+					$map_product->specs[] = $map_spec;
+					$this->global_spec_counter++;
+					break;
+				default:
+					$map_product->{$mset['type']} = $value;
 					break;
 			}
 		}
 
 		$this->last_csv_product_id = $csv_product_id;
-		if (!isset($map_product->variations)) {
-			$map_product->has_variations = 'off';
-		} else {
-			if (!is_array($map_product->variations)) {
-				$map_product->has_variations = 'off';
-			} else {
-				if (count($map_product->variations) == 0) {
-					$map_product->has_variations = 'off';
-				} else {
-					$map_product->has_variations = 'on';
-				}
-			}
-		}
-		$map_product->options = $this->determine_product_options($map_product,$csv_product_id);
+		$map_product->has_variations = (
+			(!isset($map_product->variations)) ||
+			(!is_array($map_product->variations)) ||
+			(count($map_product->variations) == 0)
+		) ? 'off' : 'on';
+		$map_product->options = $this->determine_product_options( $map_product, $csv_product_id );
+
+		return $map_product;
 	}
 
 	function remove_product(&$map_product,$csv_product_id,$shopp_product_id)
@@ -1175,30 +1132,35 @@ class spi_model {
 			}
 			$this->_get_combos($groups,$combinations);
 		}
-		unset($row_data);
-		$row_data = $this->get_importer_data($map_product);
-		$row_type = (isset($groups))?"N/A":$this->defval($row_data->spi_type,"Shipped");
-		$row_price = (isset($groups))?"0.00":$this->defval($row_data->spi_price,"0.00");
+
+		$row_data = $this->get_importer_data( $map_product );
+
+		$row_type = isset($groups) ?
+			"N/A" :
+			$this->defval( $row_data->spi_type, "Shipped" );
+		$row_price = isset($groups) ?
+			"0.00" :
+			$this->defval( $row_data->spi_price, "0.00" );
 
 		$tc1 = array(
-			"product"=>$map_product->id,
-			"options"=>"",
-			"optionkey"=>"0",
-			"label"=>"Price & Delivery",
-			"context"=>"product",
-			"type"=>$row_type,
-			"sku"=>(isset($groups))?"":$this->defval($row_data->spi_sku,""),
-			"price"=>$this->parse_float($row_price),
-			"saleprice"=>$this->parse_float((isset($groups))?"0.00":$this->defval($row_data->spi_saleprice,"0.00")),
-			"weight"=>$this->parse_float((isset($groups))?"0.000":$this->defval($row_data->spi_weight,"0.000")),
-			"shipfee"=>$this->parse_float((isset($groups))?"0.00":$this->defval($row_data->spi_shipfee,"0.00")),
-			"stock"=>(isset($groups))?"0":$this->defval($row_data->spi_stock,"0"),
-			"inventory"=>(isset($groups))?"off":$this->defval($row_data->spi_inventory,"off"),
-			"sale"=>(isset($groups))?"off":$this->defval($row_data->spi_sale,"off"),
-			"shipping"=>(isset($groups))?"on":$this->defval($row_data->spi_shipping,"on"),
-			"tax"=>(isset($groups))?"on":$this->defval($row_data->spi_tax,"on"),
-			"donation"=>$this->defval($row_data->spi_donation,'a:2:{s:3:"var";s:3:"off";s:3:"min";s:3:"off";}'),
-			"sortorder"=>(isset($groups))?"0":$this->defval($row_data->spi_order,"0")
+			'product'  	=> $map_product->id,
+			'options'  	=> "",
+			'optionkey'	=> "0",
+			'label'    	=> "Price & Delivery",
+			'context'  	=> "product",
+			'type'     	=> $row_type,
+			'sku'      	=> isset( $groups ) ? "" : $this->defval( $row_data->spi_sku, "" ),
+			'price'    	=> $this->parse_float($row_price),
+			'saleprice'	=> $this->parse_float((isset($groups))?"0.00":$this->defval($row_data->spi_saleprice,"0.00")),
+			'weight'   	=> $this->parse_float((isset($groups))?"0.000":$this->defval($row_data->spi_weight,"0.000")),
+			'shipfee'  	=> $this->parse_float((isset($groups))?"0.00":$this->defval($row_data->spi_shipfee,"0.00")),
+			'stock'    	=> isset( $groups ) ? "0" : $this->defval( $row_data->spi_stock, "0" ),
+			'inventory'	=> isset( $groups ) ? "off" : $this->defval( $row_data->spi_inventory, "off" ),
+			'sale'     	=> isset( $groups ) ? "off" : $this->defval( $row_data->spi_sale, "off" ),
+			'shipping' 	=> isset( $groups ) ? "on" : $this->defval( $row_data->spi_shipping, "on" ),
+			'tax'      	=> isset( $groups ) ? "on" : $this->defval( $row_data->spi_tax, "on" ),
+			'donation' 	=> $this->defval($row_data->spi_donation,'a:2:{s:3:"var";s:3:"off";s:3:"min";s:3:"off";}'),
+			'sortorder'	=> isset( $groups ) ? "0" : $this->defval( $row_data->spi_order, "0" )
 		);
 		$this->products[$map_product->id]->prices[] = $tc1;
 		if (isset($combinations)) {
