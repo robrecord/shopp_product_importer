@@ -43,6 +43,9 @@ class spi_model {
 	// !bookmark : Execution Functions
 	function execute() {
 
+		$count_products = $this->count_products_to_import();
+		$this->spi->log( 'Products before filtering: '.$count_products );
+		if( $count_products === 0 ) return 0;
 
 		//The link between CSV and Known Shopp Fields...
 		//Map them out so we can work with them
@@ -62,6 +65,10 @@ class spi_model {
 			$this->filter_by_image_presence( $p_row->spi_id );
 			$this->process_set( $p_row->spi_id, 10 );
 		}
+
+		$count_products = $this->count_products_to_import();
+		$this->spi->log('Products left after filtering: '.$count_products);
+		if( $count_products === 0 ) return 0;
 
 		// // 0 - Initialize Variations
 		// $this->spi->log('Processing products - Initialize Variations');
@@ -86,9 +93,9 @@ class spi_model {
 			$this->initialize_categories( $p_row->spi_id );
 			$this->process_set( $p_row->spi_id, 40 );
 		}
-		$this->spi->log('Cats to import '.count($this->categories));
 
 		die("OK");
+		$this->spi->log('Categories to import: '.count($this->categories));
 
 		// 3 - Initialize Products
 		$this->spi->log('Processing products - Initialize Products');
@@ -1552,6 +1559,13 @@ class spi_model {
 		$query = "SELECT * FROM {$wpdb->prefix}shopp_importer WHERE spi_id = '{$id}' ORDER BY id ";
 		$result = $wpdb->get_results($query,OBJECT);
 		return $result;
+	}
+
+	function count_products_to_import() {
+		global $wpdb;
+		$query = "SELECT COUNT(id) AS count FROM {$wpdb->prefix}shopp_importer";
+		$result = $wpdb->get_row($query);
+		return (int) $result->count;
 	}
 
 	function get_next_shopp_product_id() {
