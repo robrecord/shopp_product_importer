@@ -627,18 +627,20 @@ SQL;
 		if ($this->debug) $wpdb->show_errors();
 		$this->log(' ajax_import_products',4);
 		$model = new spi_model($this);
-		$model->execute();
-		$model->execute_mega_query();
+		$count_products = $model->execute();
+		if( $count_products !== 0 )
+		{
+			$model->execute_mega_query();
 
-		function extrapolate_result(&$val, $total=null) {
-			$temp = count($val);
-			if (@$total) $temp .= " of $total";
-			if ($temp > 0) {
-				foreach ($val as $sku)
-					$temp .= "\n\t$sku";
+			function extrapolate_result(&$val, $total=null) {
+				$temp = count($val);
+				if (@$total) $temp .= " of $total";
+				if ($temp > 0) {
+					foreach ($val as $sku)
+						$temp .= "\n\t$sku";
+				}
+				return $val = $temp;
 			}
-			return $val = $temp;
-		}
 
 			extrapolate_result($_SESSION['spi_products_filtered_img']);
 			extrapolate_result($_SESSION['spi_products_filtered_cat']);
