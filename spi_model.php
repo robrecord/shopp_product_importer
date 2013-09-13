@@ -255,9 +255,6 @@ class spi_model {
 		$specs = "";
 		$numSpecs = 0;
 		$update_products = array();
-		$message = 'Number of products to import: '.count($this->products);
-		if (!$this->spi->auto_import) echo "$message<br>";
-		$this->spi->log($message);
 
 		foreach ($this->products as $map_product) {
 
