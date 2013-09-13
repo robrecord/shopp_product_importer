@@ -1038,7 +1038,7 @@ class spi_model {
 		$this->global_spec_counter = 1;
 		if( $shopp_product_id ) $map_product->id = $shopp_product_id;
 		$map_product->csv_id = $csv_product_id;
-		$cat_index = $this->cat_index;
+
 		foreach ($this->map as $mset) {
 			$parent_index = 0;
 			$value = $this->get_mapped_var( $csv_product_id, $mset['header'] );
