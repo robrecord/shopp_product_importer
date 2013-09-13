@@ -7,6 +7,8 @@
 <?php
 require_once('spi_files.php');
 require_once('spi_images.php');
+require_once('shopp_migrate/Shopp.Objects.php');
+
 class spi_model {
 
 	//Initialize Externals
