@@ -97,21 +97,11 @@ class spi_model {
 
 		// 3 - Initialize Products
 		$this->spi->log('Processing products - Initialize Products');
-		$base_id = $this->get_next_shopp_product_id();
-
 		while ( $p_row = $this->get_next_product( 40 ) ) {
 			//Does the product already exist in shopp?
-			$existing_product = $this->product_exists( $p_row->spi_name, $p_row->spi_sku );
-			if ($existing_product) {
-				$this->products[$existing_product] = new map_product();
-				$this->initialize_product( $this->products[$existing_product],$p_row->spi_id,$existing_product );
-				$this->process_set($p_row->spi_id, 50, $existing_product);
-			} else {
-				$this->products[$base_id] = new map_product();
-				$this->initialize_product( $this->products[$base_id],$p_row->spi_id,$base_id);
-				$this->process_set($p_row->spi_id, 50, $base_id);
-				$base_id++;
-			}
+			$product_id = $this->product_exists( $p_row->spi_sku );
+			$this->products[] = $this->initialize_product( $p_row->spi_id, $product_id );
+			$this->process_set($p_row->spi_id, 50, $product_id);
 		}
 
 		// 4 - Initialize Prices
@@ -872,7 +862,6 @@ class spi_model {
 				unset ( $cat_array, $cat_string, $edge );
 			}
 		}
-		$this->cat_index = $cat_index;
 	}
 
 	function make_edge_categories($csv_product_id)
@@ -1038,7 +1027,7 @@ class spi_model {
 		$this->global_spec_counter = 1;
 		if( $shopp_product_id ) $map_product->id = $shopp_product_id;
 		$map_product->csv_id = $csv_product_id;
-		$cat_index = $this->cat_index;
+
 		foreach ($this->map as $mset) {
 			$parent_index = 0;
 			$value = $this->get_mapped_var( $csv_product_id, $mset['header'] );
