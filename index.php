@@ -640,20 +640,20 @@ SQL;
 			return $val = $temp;
 		}
 
-		extrapolate_result($_SESSION['spi_products_filtered_img']);
-		extrapolate_result($_SESSION['spi_products_filtered_cat']);
-		extrapolate_result($_SESSION['spi_products_filtered_inv']);
-		$products_imported = extrapolate_result($this->result['products'],$this->result['products_imported']);
-		$products_removed = extrapolate_result($this->result['products_removed']);
-		$products_updated = extrapolate_result($this->result['products_updated']);
+			extrapolate_result($_SESSION['spi_products_filtered_img']);
+			extrapolate_result($_SESSION['spi_products_filtered_cat']);
+			extrapolate_result($_SESSION['spi_products_filtered_inv']);
+			$products_imported = extrapolate_result($this->result['products'],$this->result['products_imported']);
+			$products_removed = extrapolate_result($this->result['products_removed']);
+			$products_updated = extrapolate_result($this->result['products_updated']);
 
+			if (!isset($this->result['edge_categories'])) $this->result['edge_categories'] = 0;
 
-		if (!isset($this->result['edge_categories'])) $this->result['edge_categories'] = 0;
+			foreach ($this->result as &$r) $r = (int)$r;
 
-		foreach ($this->result as &$r) $r = (int)$r;
-
-		$added_order_only = $this->result['added_to_order_only'] ? $this->result['added_to_order_only'] : 0;
-		$removed_order_only = $this->result['remove_from_order_only'] ? $this->result['remove_from_order_only'] : 0;
+			$added_order_only = $this->result['added_to_order_only'] ? $this->result['added_to_order_only'] : 0;
+			$removed_order_only = $this->result['remove_from_order_only'] ? $this->result['remove_from_order_only'] : 0;
+		}
 
 		$result = <<<HTML
 Products Imported to database: {$products_imported}
