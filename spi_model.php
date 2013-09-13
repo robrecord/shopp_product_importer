@@ -1120,18 +1120,19 @@ class spi_model {
 		}
 	}
 	function initialize_prices($map_product) {
-		if (count(unserialize($map_product->options)) > 0) {
-			$combinations = array();
-			$product_options = unserialize($map_product->options);
-			foreach ($product_options as $option_group) {
-				$sets = false;
-				foreach ($option_group['options'] as $options) {
-					$sets[]= $options['id'];
-				}
-				$groups[] = $sets;
-			}
-			$this->_get_combos($groups,$combinations);
-		}
+		// if( count( unserialize( $map_product->options ) ) > 0 )
+		// {
+		// 	$combinations = array();
+		// 	$product_options = unserialize($map_product->options);
+		// 	foreach ($product_options as $option_group) {
+		// 		$sets = false;
+		// 		foreach ($option_group['options'] as $options) {
+		// 			$sets[]= $options['id'];
+		// 		}
+		// 		$groups[] = $sets;
+		// 	}
+		// 	$this->_get_combos($groups,$combinations);
+		// }
 
 		$row_data = $this->get_importer_data( $map_product );
 
@@ -1163,40 +1164,40 @@ class spi_model {
 			'sortorder'	=> isset( $groups ) ? "0" : $this->defval( $row_data->spi_order, "0" )
 		);
 		$this->products[$map_product->id]->prices[] = $tc1;
-		if (isset($combinations)) {
-			foreach ($combinations as $combo) {
-				unset($row_data);
-				$row_data = $this->get_option_optionkey_data($map_product,implode(',',$combo));
-				$row_type = $this->defval($row_data->spi_type,"Shipped");
-				$row_price = $this->defval($row_data->spi_price,"0.00");
-				if ($row_price == "0.00" || $row_price == "0" || strlen($row_price) == 0){
-					$row_type = "N/A";
-					$row_price = "";
-				}
+		// if (isset($combinations)) {
+		// 	foreach ($combinations as $combo) {
+		// 		unset($row_data);
+		// 		$row_data = $this->get_option_optionkey_data($map_product,implode(',',$combo));
+		// 		$row_type = $this->defval($row_data->spi_type,"Shipped");
+		// 		$row_price = $this->defval($row_data->spi_price,"0.00");
+		// 		if ($row_price == "0.00" || $row_price == "0" || strlen($row_price) == 0){
+		// 			$row_type = "N/A";
+		// 			$row_price = "";
+		// 		}
 
-				$tc1 = array(
-					"product"=>$map_product->id,
-					"options"=>implode(',',$combo),
-					"optionkey"=>$this->get_option_optionkey($map_product,$combo),
-					"label"=>$this->get_option_label($map_product,$combo),
-					"context"=>"variation",
-					"type"=>$row_type,
-					"sku"=>$this->defval($row_data->spi_sku,""),
-					"price"=>$this->parse_float($row_price),
-					"saleprice"=>$this->parse_float($this->defval($row_data->spi_saleprice,"0.00")),
-					"weight"=>$this->parse_float($this->defval($row_data->spi_weight,"0.000")),
-					"shipfee"=>$this->parse_float($this->defval($row_data->spi_shipfee,"0.00")),
-					"stock"=>$this->defval($row_data->spi_stock,"0"),
-					"inventory"=>$this->defval($row_data->spi_inventory,"off"),
-					"sale"=>$this->defval($row_data->spi_sale,"off"),
-					"shipping"=>$this->defval($row_data->spi_shipping,"on"),
-					"tax"=>$this->defval($row_data->spi_tax,"on"),
-					"donation"=>$this->defval($row_data->spi_donation,'a:2:{s:3:"var";s:3:"off";s:3:"min";s:3:"off";}'),
-					"sortorder"=>$this->defval($row_data->spi_order,"0")
-				);
-				$this->products[$map_product->id]->prices[] = $tc1;
-			}
-		}
+		// 		$tc1 = array(
+		// 			'product'  	=> $map_product->id,
+		// 			'options'  	=> implode( ',', $combo ),
+		// 			'optionkey'	=> $this->get_option_optionkey( $map_product, $combo ),
+		// 			'label'    	=> $this->get_option_label( $map_product, $combo ),
+		// 			'context'  	=> "variation",
+		// 			'type'     	=> $row_type,
+		// 			'sku'      	=> $this->defval( $row_data->spi_sku, "" ),
+		// 			'price'    	=> $this->parse_float( $row_price ),
+		// 			'saleprice'	=> $this->parse_float( $this->defval( $row_data->spi_saleprice, "0.00" ) ),
+		// 			'weight'   	=> $this->parse_float( $this->defval( $row_data->spi_weight, "0.000" ) ),
+		// 			'shipfee'  	=> $this->parse_float( $this->defval( $row_data->spi_shipfee, "0.00" ) ),
+		// 			'stock'    	=> $this->defval( $row_data->spi_stock, "0" ),
+		// 			'inventory'	=> $this->defval( $row_data->spi_inventory, "off" ),
+		// 			'sale'     	=> $this->defval( $row_data->spi_sale, "off" ),
+		// 			'shipping' 	=> $this->defval( $row_data->spi_shipping, "on" ),
+		// 			'tax'      	=> $this->defval( $row_data->spi_tax, "on" ),
+		// 			'donation' 	=> $this->defval( $row_data->spi_donation, 'a:2:{s:3:"var";s:3:"off";s:3:"min";s:3:"off";}' ),
+		// 			'sortorder'	=> $this->defval( $row_data->spi_order, "0" )
+		// 		);
+		// 		$this->products[$map_product->id]->prices[] = $tc1;
+		// 	}
+		// }
 
 	}
 
