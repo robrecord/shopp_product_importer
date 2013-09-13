@@ -245,8 +245,8 @@ class spi_model {
 		$category_index = 0;
 		$catalog_index = 0;
 		$spec_index = 0;
-		$next_tag_id =  $this->get_next_shopp_tag_id();
-		$next_category_id = $this->get_next_shopp_category_id();
+		// $next_tag_id =  $this->get_next_shopp_tag_id();
+		// $next_category_id = $this->get_next_shopp_category_id();
 		$used_tags = array();
 		$used_categories = array();
 		$values = "";
