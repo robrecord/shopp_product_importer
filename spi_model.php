@@ -1636,7 +1636,9 @@ class spi_model {
 	function process_set($id,$status,$shopp_product_id = null) {
 		global $wpdb;
 		$id = trim($id);
-		if (!is_null($shopp_product_id)) $prod_id = ", product_id = '{$shopp_product_id}'"; else $prod_id = "";
+		$prod_id = ( !is_null( $shopp_product_id ) ) ?
+			", product_id = '{$shopp_product_id}'" :
+			"";
 		$query = "UPDATE {$wpdb->prefix}shopp_importer SET processing_status = {$status} {$prod_id} WHERE spi_id = '{$id}'";
 		$result = $wpdb->query($query);
 		return $result;
