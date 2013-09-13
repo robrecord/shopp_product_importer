@@ -93,8 +93,6 @@ class spi_model {
 			$this->initialize_categories( $p_row->spi_id );
 			$this->process_set( $p_row->spi_id, 40 );
 		}
-
-		die("OK");
 		$this->spi->log('Categories to import: '.count($this->categories));
 
 		// 3 - Initialize Products
