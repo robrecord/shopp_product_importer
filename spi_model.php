@@ -128,10 +128,6 @@ class spi_model {
 			return $this->products;
 		// } else echo('No products could be imported.<br>');
 	}
-	function log($a)
-	{
-		$this->spi->log($a);
-	}
 	function execute_images() {
 		try {
 			$this->initialize_map();
@@ -175,7 +171,7 @@ class spi_model {
 										$message = 'file missing: '.$url;
 										$error = true;
 									}
-									$this->log("processed image $filename - $message");
+									$this->spi->log("processed image $filename - $message");
 									if ($report) {
 										$output[] = array(
 											'sku'=>$this->get_row_mapped_var($p_row->id,"spi_sku"),
