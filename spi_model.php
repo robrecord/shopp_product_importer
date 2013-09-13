@@ -842,16 +842,16 @@ class spi_model {
 			$mset = $this->map[$i];
 			switch ($mset['type']) {
 				case 'edge_category_id': // EDGE Category ID
-					$type='id';
-					break;
 				case 'edge_category_name': // EDGE Category Name
-					$type='name';
-					break;
 				case 'edge_category_type': // EDGE Category Type
-					$type='type';
-					break;
 				case 'edge_category_desc': // EDGE Category Description
-					$type='desc';
+					$type = substr( $mset['type'], strlen('edge_category_') ); // $type = id, name, type or desc
+
+					$this->edge_cat_builder[ $csv_product_id ][ $type ] =
+						ucwords( strtolower( $this->get_mapped_var( $csv_product_id, $mset[ 'header' ] ) ) );
+					if ( $cat_array = $this->make_edge_categories( $csv_product_id ) ) {
+						$edge=true;
+					} else unset($cat_array);
 					break;
 				case 'category':
 					//cat_string = the raw slash delimited category data
@@ -860,22 +860,6 @@ class spi_model {
 					break;
 			}
 
-			if ($type) {
-				$this->edge_cat_builder[$csv_product_id][$type] = ucwords(strtolower($this->get_mapped_var($csv_product_id,$mset['header'])));
-				if ($cat_array = $this->make_edge_categories($csv_product_id)) {
-					$edge=true;
-					// var_dump($cat_array);
-					// foreach ($cat_array as $key => &$cats) {
-					// 	$this->map[] = array(
-					// 		'type'=>'category'
-					// 	,	'label'=>''
-					// 	,	'header'=>'spi_category'
-					// 	,	'idx'=>''//($key!=0?$key:'')
-					// 	);
-					// }
-				} else unset($cat_array);
-				unset ($type);
-			}
 			if( isset( $cat_array ) && !empty( $cat_array ) )
 			{
 				if( ! $cat_string || $this->any_exist( 'spi_category', $csv_product_id ) > 0 )
