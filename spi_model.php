@@ -286,7 +286,7 @@ class spi_model {
 					$description = 	$map_product->description_text;
 				}
 
-				if ($id = $this->product_exists($map_product->name,$map_product->sku)) {
+				if ($id = $this->product_exists( $map_product->sku )) {
 					$add_products = $this->update_product_sql($map_product,$description);
 					$update_products = $add_products + $update_products;
 				} else {
@@ -429,7 +429,7 @@ class spi_model {
 			$category = $pieces[1];
 			$testToKeep = $this->test_if_order_only_category($category);
 
-			$id = $this->product_exists($name,$sku);
+			$id = $this->product_exists($sku);
 
 			if($testToKeep && $id){
 
@@ -737,8 +737,7 @@ class spi_model {
 						if (!in_array($cat_id,$allowed_categories)) {
 							if ($this->Shopp->Settings->get('catskin_importer_empty_first') == 'no') {
 								$sku = $this->get_mapped_var($csv_product_id,'spi_sku');
-								$name = $this->get_mapped_var($csv_product_id,'spi_name');
-								$id = $this->product_exists($name,$sku);
+								$id = $this->product_exists($sku);
 								if ($id) $_SESSION['spi_products_to_remove'][$sku] = $name;
 							}
 							$this->result['filtered'] += $this->remove_product_import($csv_product_id);
@@ -772,8 +771,7 @@ class spi_model {
 		// 					default:
 		// 						if ($this->Shopp->Settings->get('catskin_importer_empty_first') == 'no') {
 		// 							$sku = $this->get_mapped_var($csv_product_id,'spi_sku');
-		// 							$name = $this->get_mapped_var($csv_product_id,'spi_name');
-		// 							$id = $this->product_exists($name,$sku);
+		// 							$id = $this->product_exists($sku);
 		// 							if ($id) $this->spi->result['removed'] += $this->remove_product_existing($id);
 		// 						}
 		// 						$this->result['filtered'] += $this->remove_product_import($csv_product_id);
@@ -1688,14 +1686,10 @@ class spi_model {
 		return null;
 	}
 
-	function product_exists( $name, $sku ) {
+	function product_exists( $sku ) {
 		global $wpdb;
-		$query = "SELECT pd.id FROM {$wpdb->prefix}shopp_product pd, {$wpdb->prefix}shopp_price pc WHERE (pd.id = pc.product) AND (pc.sku='".addslashes($sku)."' ) LIMIT 1;";
-		// $query = "SELECT pd.id FROM {$wpdb->prefix}shopp_product pd, {$wpdb->prefix}shopp_price pc WHERE (pd.id = pc.product) AND (pd.name='".addslashes($name)."' AND pc.sku='".addslashes($sku)."' ) LIMIT 1;";
-			$result = $wpdb->get_var($query);
-			// var_dump($query);
-			// var_dump($result);
-		return $result;
+		$query = "SELECT product FROM {$wpdb->prefix}shopp_price WHERE (sku='".addslashes($sku)."' ) LIMIT 1;";
+		return $wpdb->get_var($query);
 	}
 
 	function tag_exists( $name, $id ) {
