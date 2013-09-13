@@ -89,16 +89,16 @@ class spi_model {
 		// }
 
 		// 2 - Initialize Categories
-		$this->spi->log('Processing products - Initialize Categories');
+		$this->spi->log( 'Processing products - Initialize Categories' );
 		$this->categories = array();
 		while ( $p_row = $this->get_next_product( 10 ) ) {
 			$this->initialize_categories( $p_row->spi_id );
 			$this->process_set( $p_row->spi_id, 40 );
 		}
-		$this->spi->log('Categories to import: '.count($this->categories));
+		$this->spi->log( 'Categories to import: '.count($this->categories) );
 
 		// 3 - Initialize Products
-		$this->spi->log('Processing products - Initialize Products');
+		$this->spi->log( 'Processing products - Initialize Products' );
 		while ( $p_row = $this->get_next_product( 40 ) ) {
 			//Does the product already exist in shopp?
 			$product_id = $this->product_exists( $p_row->spi_sku );
@@ -107,7 +107,7 @@ class spi_model {
 		}
 
 		// 4 - Initialize Prices
-		$this->spi->log('Processing products - Initialize Prices');
+		$this->spi->log( 'Processing products - Initialize Prices' );
 		foreach ($this->products as $map_product) {
 			$this->initialize_prices($map_product);
 		}
@@ -175,7 +175,7 @@ class spi_model {
 							}
 						}
 					}
-					$this->process_product($p_row->id,50);
+					$this->process_product( $p_row->id, 60 );
 					if ($output) {
 						if ($this->spi->auto_import) return true;
 						else return $this->image_output_html($output);
@@ -269,7 +269,7 @@ class spi_model {
 			if (strlen($map_product->description) > 0) {
 				$description = $spi_files->load_html_from_file($map_product->description);
 			} else {
-				$description = 	$map_product->description_text;
+				$description = $map_product->description_text;
 			}
 
 			if ($id = $this->product_exists( $map_product->sku )) {
