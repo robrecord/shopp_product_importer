@@ -282,12 +282,15 @@ class spi_model {
 
 			foreach ($map_product->specs as $spec) $specs[] = $this->create_specs_sql($spec);
 
+			// Prices
+			if ( $this->Shopp->Settings->get('catskin_importer_clear_prices') == 'yes' ) {
+				$this->spi->log("Clearing price lines for {$map_product->sku}" );
+				$this->truncate_prices_for_product($map_product->sku);
+			}
+
 			foreach ($map_product->prices as $price) {
-				$prices[] = $this->create_prices_sql($price);
-				if ($this->Shopp->Settings->get('catskin_importer_clear_prices') == 'yes') {
-					$result = $this->spi->truncate_prices_for_product($map_product->id);
-					// echo "clearing price lines for {$map_product->id}: $result\n";
-				}
+				$price->product = $map_product->id;
+				$result = $wpdb->insert( "{$wpdb->prefix}shopp_price", get_object_vars( $price ) );
 			}
 
 			foreach ($this->categories as $id=>$category) {
@@ -408,6 +411,13 @@ class spi_model {
 		return $this->spi->result;
 	}
 
+	function truncate_prices_for_product($product_sku) {
+		global $wpdb;
+		$result = $wpdb->get_var( "DELETE FROM wp_shopp_price WHERE sku='{$product_sku}'" );
+		// TODO remove meta too
+		//$result = $wpdb->get_var( "DELETE FROM wp_shopp_meta WHERE context='price' AND parent='{$result}'" );
+		return $result;
+	}
 
 	function remove_products($items){
 

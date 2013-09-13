@@ -520,17 +520,6 @@ SQL;
 		return false;
 	}
 
-	function truncate_prices_for_product($product_id) {
-		global $wpdb;
-		if ($this->Shopp->Settings->get('catskin_importer_clear_prices') == 'yes') {
-			$result = $wpdb->get_var( "DELETE FROM wp_shopp_price WHERE product='{$product_id}'" );
-			var_dump($result);
-			echo "remove meta too - TODO";
-			//$result = $wpdb->get_var( "DELETE FROM wp_shopp_meta WHERE context='price' AND parent='{$result}'" );
-		}
-		return $result;
-	}
-
 	function quote_smart($value,$key)
 	{
 		// Quote if not a number or a numeric string
