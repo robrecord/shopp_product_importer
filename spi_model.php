@@ -1013,14 +1013,12 @@ class spi_model {
 					$map_category->parent_id = $parent_category->id;
 				}
 
-				if ($existing_shopp_category)
+				if (!empty($existing_shopp_category))
 				{
-					$map_category->id = $existing_shopp_category->id;
+					$map_category->id = $existing_shopp_category->ID;
 					$map_category->exists = true;
-					$map_category->parent_id = $existing_shopp_category->parent;
+					$map_category->parent_id = $existing_shopp_category->post_parent;
 				}
-				else
-					$cat_index++;
 
 				if ($index)
 					$this->categories['edge_'.$index] = $map_category;
@@ -1310,12 +1308,8 @@ class spi_model {
 
 		if( $edge )
 		{
- 			$args = array(
-				'name' => $uri,
-				'post_type' => 'shopp_edge_category',
-				'posts_per_page' => 1
-			);
-			$result = get_posts( $args );
+			$result = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}posts WHERE `post_name`='$uri' AND `post_type`='spi_edge_category' LIMIT 1;");
+			$result = array_pop( $result );
 		}
 		else
 		{
