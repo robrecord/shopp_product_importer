@@ -1404,17 +1404,6 @@ class spi_model {
 		return $result;
 	}
 
-	function category_exists_anywhere($uri) {
-		global $wpdb;
-		explode($uri);
-			$query = "SELECT * FROM {$wpdb->prefix}shopp_category WHERE uri = '{$uri}';";
-			$result = $wpdb->get_row($query);
-		return $result;
-	}
-
-	function defval($value,$default) {
-		return strlen($value)>0?$value:$default;
-	}
 
 	function determine_product_options($map_product,$csv_product_id) {
 		$options = array();
