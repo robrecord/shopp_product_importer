@@ -363,6 +363,8 @@ SQL;
 
 		$this->basepath = WP_PLUGIN_DIR;
 		$this->path = WP_PLUGIN_DIR . '/' . array_pop(explode('/',dirname(__FILE__)));
+		$this->thispluginpath = WP_PLUGIN_DIR . '/' . dirname(plugin_basename(__FILE__)).'/';
+
 		$this->directory = basename($this->path);
 		$this->class_path = "{$this->basepath}/{$this->directory}/classes";
 		$this->model_path = "{$this->class_path}/model";
