@@ -523,10 +523,16 @@
 							}
 						},
 						error: function(response){
-							// view_error(xhr.responseText);
-							// view_error(response);
+							if ('responseText' in response)
+							{
+							  view_error(response.responseText);
+							}
+							else
+							{
 								$("#imported-rows").append(response);
 								next_image();
+						}
+
 						}
 					});
 				}
