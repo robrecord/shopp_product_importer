@@ -492,7 +492,7 @@
 							$("#imported-rows").append(response);
 							$("#imported-rows").append("<h3>Uploading Images...</h3>");
 							$("#imported-rows").append("<p>Sit back, relax, grab a coffee...</p>");
-							// next_image();
+							next_image();
 						},
 						error: function(xhr){
 							view_error(xhr.responseText);
