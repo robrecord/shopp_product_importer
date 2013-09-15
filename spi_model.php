@@ -223,15 +223,10 @@ class spi_model {
 
 	function path_from_url($url)
 	{
-		if ( !defined('ABSPATH') )
-			define('ABSPATH', dirname(__FILE__) . '/');
-
-		$url_parsed = parse_url($url);
-		$path = $url_parsed['path'];
-		$path = ABSPATH.$path;
-		$path = str_replace('seita_test_2//seita_test_2','seita_test_2',$path);
-		$path = str_replace('seita_test//seita_test','seita_test',$path);
-		return str_replace('wordpress//wordpress','wordpress',$path);
+		$wp_path = str_replace(home_url('/'), '', site_url('/'));
+		$abs_path = str_replace($wp_path, '', ABSPATH);
+		$path = str_replace(home_url('/'), $abs_path, $url);
+		return $path;
 	}
 
 	function execute_mega_query() {
