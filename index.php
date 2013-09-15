@@ -643,42 +643,37 @@ SQL;
 		if( $count_products !== 0 )
 		{
 			$model->execute_mega_query();
+		}
 
-			function extrapolate_result(&$val, $total=null) {
-				$temp = count($val);
-				if (@$total) $temp .= " of $total";
-				if ($temp > 0) {
-					foreach ($val as $sku)
+		function extrapolate_result(&$values) {
+			$temp = count($values);
+			foreach ($values as $sku)
 						$temp .= "\n\t$sku";
-				}
-				return $val = $temp;
+			return $values = $temp;
 			}
+
+
 
 			extrapolate_result($_SESSION['spi_products_filtered_img']);
 			extrapolate_result($_SESSION['spi_products_filtered_cat']);
 			extrapolate_result($_SESSION['spi_products_filtered_inv']);
-			$products_imported = extrapolate_result($this->result['products'],$this->result['products_imported']);
-			$products_removed = extrapolate_result($this->result['products_removed']);
-			$products_updated = extrapolate_result($this->result['products_updated']);
+		extrapolate_result($this->result['products_imported']);
+		extrapolate_result($this->result['products_removed']);
+		extrapolate_result($this->result['products_updated']);
+		// $edge_categories_added = extrapolate_result( $this->result['edge_categories'] );
 
-			if (!isset($this->result['edge_categories'])) $this->result['edge_categories'] = 0;
-
-			foreach ($this->result as &$r) $r = (int)$r;
-
-			$added_order_only = $this->result['added_to_order_only'] ? $this->result['added_to_order_only'] : 0;
-			$removed_order_only = $this->result['remove_from_order_only'] ? $this->result['remove_from_order_only'] : 0;
-		}
+		// foreach ($this->result as &$r) $r = (int) $r;
 
 		$result = <<<HTML
-Products Imported to database: {$products_imported}
-Products Updated: {$products_updated}
+Products Imported to database: {$this->result['products_imported']}
+Products Updated: {$this->result['products_updated']}
 
-Products added to Order Only: {$added_order_only}
-Products removed from Order Only: {$removed_order_only}
+Products added to Order Only: {$this->result['added_to_order_only']}
+Products removed from Order Only: {$this->result['remove_from_order_only']}
 
 Products Filtered due to missing image: {$_SESSION['spi_products_filtered_img']}
 Products Filtered due to disallowed category: {$_SESSION['spi_products_filtered_cat']}
-Products Removed due to not in stock: {$products_removed}
+Products Removed due to not in stock: {$this->result['products_removed']}
 
 HTML;
 
@@ -687,17 +682,17 @@ HTML;
 		$result .= <<<HTML
 Products Filtered due to not in stock: {$_SESSION['spi_products_filtered_inv']}
 
-Prices Imported:  {$this->result['prices']}
-Tags Imported: {$this->result['tags']}
-Categories Imported: {$this->result['categories']}
-EDGE Categories Imported: {$this->result['edge_categories']}
-Catalog Items Created: {$this->result['catalogs']}
-Spec Items Created: {$this->result['specs']}
-
 HTML;
+// EDGE Categories Imported: {$edge_categories_added}
+
+// HTML;
 
 		$this->report_errors();
 
+		unset($_SESSION['spi_products_filtered_cat']);
+		unset($_SESSION['spi_products_filtered_img']);
+		unset($_SESSION['spi_products_filtered_inv']);
+		unset($_SESSION['spi_products_to_remove']);
 
 		unset($model);
 
