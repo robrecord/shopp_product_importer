@@ -950,7 +950,7 @@ class spi_model {
 		}
 	}
 
-	function make_category( &$cat_array, &$cat_index, &$parent_index, &$csv_product_id, $index=null )
+	function make_category( &$cat_array, &$parent_index, &$csv_product_id, $index=null )
 	{
 		//initialize our arrays for reuse
 		$uri_array = array();
