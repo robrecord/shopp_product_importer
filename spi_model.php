@@ -335,8 +335,6 @@ class spi_model {
 
 		$wpdb->show_errors();
 
-		die("OK");
-
 		//Update Product Lines
 		if (!isset($this->spi->result['products_updated'])) $this->spi->result['products_updated'] = array();
 		if (isset($update_products)) {
