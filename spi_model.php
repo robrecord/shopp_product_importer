@@ -64,7 +64,7 @@ class spi_model {
 		$this->spi->log('Filtering products');
 		while ( $p_row = $this->get_next_product( 0 ) ) {
 			$this->filter_by_edge_category( $p_row->spi_id );
-			// $this->filter_by_inventory_status( $p_row->spi_id );
+			$this->filter_by_inventory_status( $p_row->spi_id );
 			$this->filter_by_image_presence( $p_row->spi_id );
 			$this->process_set( $p_row->spi_id, 10 );
 		}
@@ -806,13 +806,9 @@ class spi_model {
 	}
 	function filter_by_inventory_status($csv_product_id)
 	{
-		// foreach ($this->map as $mset) {
-		// 	switch ($mset['type']) {
-		// 		case 'edge_inventory_status':
-		// 			if ($this->any_exist($mset['header'],$csv_product_id) > 0) {
-		// 				$status = $this->get_mapped_var($csv_product_id,$mset['header']);
-		//
-		// 				switch ($status) {
+
+		// foreach ($this->examine_data as $key=>$row) {
+		// 	switch ($row[ $this->column_map['edge_inventory_status'] ]) {
 		// 					case 'I':	// I    In-stock
 		// 					break;
 		// 					case 'X':	// X    Scrapped
@@ -823,18 +819,54 @@ class spi_model {
 		// 					case 'M':	// M    Missing
 		// 					case 'U':	// U    Consumed as part (assembled into item or used in repair job)
 		// 					default:
-		// 						if ($this->Shopp->Settings->get('catskin_importer_empty_first') == 'no') {
-		// 							$sku = $this->get_mapped_var($csv_product_id,'spi_sku');
-		// 							$id = $this->product_exists($sku);
-		// 							if ($id) $this->spi->result['removed'] += $this->remove_product_existing($id);
-		// 						}
-		// 						$this->result['filtered'] += $this->remove_product_import($csv_product_id);
-		// 					break;
+
+		// 			if ( $this->Shopp->Settings->get('catskin_importer_empty_first') == 'no' )
+		// 			{
+		// 				// record lines to remove from DB
+		// 				$_SESSION[ 'spi_products_to_remove' ][ $row[ $this->column_map[ 'sku' ] ] ] = $row[ $this->column_map[ 'name' ] ];
 		// 				}
+		// 			else
+		// 			{
+		// 				// or if starting from empty, log which were filtered out
+		// 				$_SESSION[ 'spi_products_filtered_inv' ][] = $this->column_map[ 'sku' ];
 		// 			}
+		// 			unset($this->examine_data[$key]);
 		// 		break;
 		// 	}
 		// }
+		foreach ($this->map as $mset) {
+			switch ($mset['type']) {
+				case 'edge_inventory_status':
+					if ($this->any_exist($mset['header'],$csv_product_id) > 0) {
+
+						$status = $this->get_mapped_var($csv_product_id,$mset['header']);
+
+
+						switch ($status) {
+							case 'I':	// I    In-stock
+							break;
+							case 'S':	// S    Sold
+							case 'L':	// L    Layaway
+							case 'O':	// O 	Special order
+							case 'X':	// X    Scrapped
+							case '-':	// -	Deleted
+							case 'V':	// V    Returned to vendor
+							case 'M':	// M    Missing
+							case 'U':	// U    Consumed as part (assembled into item or used in repair job)
+							default:
+								$sku = $this->get_mapped_var($csv_product_id,'spi_sku');
+								$id = $this->product_exists($sku);
+
+								if ($id) $_SESSION[ 'spi_products_to_remove' ][] = $sku;
+								else $_SESSION[ 'spi_products_filtered_inv' ][] = $sku;
+								$this->remove_product_import( $csv_product_id );
+
+							break;
+						}
+					}
+				break;
+			}
+		}
 	}
 
 	function filter_by_image_presence($csv_product_id)
