@@ -278,6 +278,10 @@ class spi_model {
 				$insert_products[$map_product->id] = $map_product->id = $this->create_wp_product($map_product,$description);
 				$this->spi->result['products_imported'][] = $map_product->sku;
 			}
+			$wpdb->update( "{$wpdb->prefix}shopp_importer",
+				array('product_id'=>$map_product->id),
+				array('spi_sku'=>$map_product->sku)
+			);
 
 			// $this->create_new_shopp_product_meta( $map_product, $map_product->id );
 
