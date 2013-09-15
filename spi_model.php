@@ -98,7 +98,7 @@ class spi_model {
 			$this->initialize_categories( $p_row->spi_id );
 			$this->process_set( $p_row->spi_id, 40 );
 		}
-		$this->spi->log( 'Categories to import: '.count($this->categories) );
+		$this->spi->log( 'Categories used: '.count($this->edge_categories) );
 
 		// 3 - Initialize Products
 		$this->spi->log( 'Processing products - Initialize Products' );
@@ -290,7 +290,7 @@ class spi_model {
 
 			// Prices
 			if ( $this->Shopp->Settings->get('catskin_importer_clear_prices') == 'yes' ) {
-				$this->spi->log("Clearing price lines for {$map_product->sku}" );
+				// $this->spi->log("Clearing price lines for {$map_product->sku}" );
 				$this->truncate_prices_for_product($map_product->sku);
 			}
 
