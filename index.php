@@ -143,7 +143,7 @@ class shopp_product_importer {
 			add_action('shopp_init', array(&$this, 'shopp_init'));
 			add_action('shopp_auto_import', array(&$this, 'automatic_start'));
 
-			add_action('shopp_admin_menu', array(&$this, 'shopp_admin_menu'));
+			add_filter('shopp_admin_menus', array(&$this, 'shopp_admin_menu'));
 
 			//remove before uploading to production!
 // 			$rand = rand(10, 99);
@@ -332,14 +332,18 @@ SQL;
 
 	function shopp_init()
 	{
-		add_action('shopp_admin_menu', array(&$this, 'shopp_admin_menu'));
+		// add_action('shopp_admin_menu', array(&$this, 'shopp_admin_menu'));
 
-		// foreach (array('MapCategories', 'OrderOnly') as $controller) {
-		// 	$target = "{$this->flow_path}/$controller.php";
-		// 	$link = SHOPP_FLOW_PATH."/$controller.php";
-		// 	if (!file_exists($link)) symlink( $target,$link );
-		// 	require_once($target);
-		// }
+		foreach (array('MapCategories', 'OrderOnly') as $controller) {
+			$target = "{$this->flow_path}/$controller.php";
+			$link = SHOPP_FLOW_PATH."/$controller.php";
+			if (!file_exists($link)) symlink( $target,$link );
+			require_once($target);
+		}
+
+		$target = "{$this->path}/classes/ui/orderonly";
+		$link = SHOPP_ADMIN_PATH."/orderonly";
+		if (!file_exists($link)) symlink( $target,$link );
 	}
 
 	public function register_edge_categories()
@@ -390,18 +394,20 @@ SQL;
 			register_importer("shopp_product_importer","EDGE CSV to Shopp","Import <strong>Shopp products</strong> from an EDGE CSV file",array(&$this,'shopp_importer_settings_page'));
 			//exit("The Importers: ".print_r($wp_importers,true));
 		}
-		// var_dump($this->Shopp->Flow->Admin->Pages);
-
 
 	}
 	function shopp_admin_menu($ShoppAdmin)
 	{
-		// $ShoppMenu = $ShoppAdmin->MainMenu; //this is our Shopp menu handle
+		$ShoppMenu = $ShoppAdmin->MainMenu; //this is our Shopp menu handle
+		// $ShoppAdmin->caps['importer-main'] = defined('SHOPP_USERLEVEL')?SHOPP_USERLEVEL:'read';
+		// $ShoppAdmin->addpage('importer-main',__('Manage Order Only','Shopp'),'OrderOnly','Manage Order Only');
+		// array(&$this,'shopp_importer_settings_page')
+
 		// $ShoppAdmin->caps['importer-catmap'] = defined('SHOPP_USERLEVEL')?SHOPP_USERLEVEL:'read';
 		// !bookmark TODO addpage
 		// $ShoppAdmin->addpage('importer-catmap',__('Category Map','Shopp'),'MapCategories','Map EDGE category IDs to Shopp categories');
-		// $ShoppAdmin->caps['importer-orderonly'] = defined('SHOPP_USERLEVEL')?SHOPP_USERLEVEL:'read';
-		// $ShoppAdmin->addpage('importer-orderonly',__('Manage Order Only','Shopp'),'OrderOnly','Manage Order Only');
+		$ShoppAdmin->caps['importer-orderonly'] = defined('SHOPP_USERLEVEL')?SHOPP_USERLEVEL:'read';
+		$ShoppAdmin->addpage('importer-orderonly',__('Manage Order Only','Shopp'),'OrderOnly','Manage Order Only');
 	}
 
 	function admin_menu()
