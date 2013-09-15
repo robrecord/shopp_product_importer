@@ -225,8 +225,6 @@ SQL;
 					$this->truncate_all_prior_to_import();
 					if ($this->ajax_import_csv($filename))
 						if ($this->ajax_import_products()) {
-							$this->log("mapping categories");
-							$this->map_categories();
 							$this->log("starting images");
 							$this->auto_import_images();
 						}
@@ -241,7 +239,17 @@ SQL;
 		}
 
 	}
-
+	function map_categories()
+	{
+		echo "Map EDGE Categories - TODO";
+		// global $MapCategories;
+		// set_error_handler(array(&$this, 'spi_errors'));
+		// $this->shopp_init();
+		// $MapCategories = new MapCategories($this);
+		// $result = $MapCategories->process_categories(true,false,$this);
+		// $this->log($result);
+		// if (!$this->auto_import) echo $result;
+	}
 	function find_csvs($dir)
 	{
 
@@ -699,8 +707,6 @@ HTML;
 
 
 		if ($this->auto_import) return $result;
-
-		// $this->map_categories();
 
 		exit();
 	}
