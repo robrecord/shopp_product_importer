@@ -796,8 +796,8 @@ SQL;
 					if ($this->any_exist($mset['header'],$csv_product_id) > 0) {
 						$cat_id = $this->get_mapped_var($csv_product_id,$mset['header']);
 						if (!in_array($cat_id,$allowed_categories)) {
-							if ($this->Shopp->Settings->get('catskin_importer_empty_first') == 'no') {
 								$sku = $this->get_mapped_var($csv_product_id,'spi_sku');
+							if ($this->Shopp->Settings->get('catskin_importer_empty_first') == 'no') {
 								$id = $this->product_exists($sku);
 								if ($id) $_SESSION['spi_products_to_remove'][] = $sku;
 							}
