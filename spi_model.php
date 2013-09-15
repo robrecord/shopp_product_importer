@@ -273,10 +273,10 @@ class spi_model {
 			// var_dump( $map_product->sku, $this->product_exists( $map_product->sku ) )
 			if ($map_product->id = $this->product_exists( $map_product->sku )) {
 				$this->update_wp_product($map_product,$description);
-				$updated_products[] = $map_product->id;
+				$this->spi->result['products_updated'][] = $map_product->sku;
 			} else {
 				$insert_products[$map_product->id] = $map_product->id = $this->create_wp_product($map_product,$description);
-				$this->spi->result['products'][] = $map_product->sku;
+				$this->spi->result['products_imported'][] = $map_product->sku;
 			}
 
 			// $this->create_new_shopp_product_meta( $map_product, $map_product->id );
@@ -764,7 +764,7 @@ class spi_model {
 								if ($id) $_SESSION['spi_products_to_remove'][] = $sku;
 							}
 							$this->result['filtered'] += $this->remove_product_import($csv_product_id);
-							$_SESSION['spi_products_filtered_cat'][] = $csv_product_id;
+							$_SESSION['spi_products_filtered_cat'][] = $sku;
 							return;
 						}
 					}
