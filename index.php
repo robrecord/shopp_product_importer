@@ -355,17 +355,6 @@ SQL;
 
 	public function register_edge_categories()
 	{
-		register_post_type( 'spi_edge_category',
-			array(
-				'labels' => array(
-					'name' => __( 'EDGE Category' ),
-					'singular_name' => __( 'EDGE Category' )
-				),
-			'public' => true,
-			'has_archive' => false,
-			)
-		);
-
 	}
 
 	function set_paths() {
