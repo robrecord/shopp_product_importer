@@ -807,39 +807,7 @@ HTML;
 
 			if (!$this->column_map) $this->map_columns_from_saved_options();
 
-			$_SESSION['spi_products_filtered_img'] = array();
-			$_SESSION['spi_products_filtered_cat'] = array();
-			$_SESSION['spi_products_filtered_inv'] = array();
-			$_SESSION['spi_products_removed'] = array();
-			$_SESSION['spi_products_to_remove'] = array();
 
-			foreach ($this->examine_data as $key=>$row) {
-				switch ($row[ $this->column_map['edge_inventory_status'] ]) {
-					case 'I':	// I    In-stock
-					break;
-					case 'X':	// X    Scrapped
-					case '-':	// -    Deleted
-					case 'L':	// L    Layaway
-					case 'S':	// S    Sold
-					case 'V':	// V    Returned to vendor
-					case 'M':	// M    Missing
-					case 'U':	// U    Consumed as part (assembled into item or used in repair job)
-					default:
-
-						if ( $this->Shopp->Settings->get('catskin_importer_empty_first') == 'no' )
-						{
-							// record lines to remove from DB
-							$_SESSION[ 'spi_products_to_remove' ][ $row[ $this->column_map[ 'sku' ] ] ] = $row[ $this->column_map[ 'name' ] ];
-						}
-						else
-						{
-							// or if starting from empty, log which were filtered out
-							$_SESSION[ 'spi_products_filtered_inv' ][] = $this->column_map[ 'sku' ];
-						}
-						unset($this->examine_data[$key]);
-					break;
-				}
-			}
 
 			// $this->log(' map_columns_from_saved_options',4);
 			// $start_at = 1;
