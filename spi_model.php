@@ -1084,7 +1084,7 @@ class spi_model {
 			{
 				if( is_null($this->category_by_uri($map_category->parent_uri)))
 				{
-					$map_category->parent_id = 03;
+					$map_category->parent_id = 0;
 				}
 				else
 				{
