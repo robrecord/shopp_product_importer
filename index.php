@@ -83,6 +83,15 @@ class shopp_product_importer {
 	public $model_path;
 	public $flow_path;
 
+	public $result = array(
+		'products_imported'=>array(),
+		'products_removed'=>array(),
+		'products_updated'=>array(),
+		'edge_categories_added'=>array(),
+		'added_to_order_only'=>0,
+		'remove_from_order_only'=>0
+	);
+
 	function spi_errors($errno, $errstr,$errfile, $errline)
 	{
 		if (dirname($errfile)==dirname(__FILE__)) {
