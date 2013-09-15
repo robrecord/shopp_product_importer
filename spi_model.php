@@ -329,6 +329,8 @@ class spi_model {
 				}
 			}
 
+			$Product = new Product($map_product->id);
+			$Product->load_data();
 		}
 
 		unset($spi_files);
