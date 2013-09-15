@@ -512,6 +512,12 @@ SQL;
 				$wpdb->query( "TRUNCATE TABLE $table;" );
 			}
 			$wpdb->query( "DELETE FROM wp_shopp_meta WHERE type='spec' OR type='image' OR type='meta';" );
+
+			if( $this->Shopp->Settings->get('catskin_importer_clear_categories') == 'yes')
+			{
+				$this->log("Clearing categories not implemented");
+			}
+
 		}
 	}
 
