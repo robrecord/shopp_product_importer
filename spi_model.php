@@ -461,7 +461,7 @@ class spi_model {
 
 	function remove_products($items){
 
-		foreach($items as $sku=>$name) {
+		foreach($items as $sku) {
 			$pieces = explode("-", $sku);
 			$category = $pieces[1];
 			$testToKeep = $this->test_if_order_only_category($category);
@@ -470,9 +470,10 @@ class spi_model {
 
 			if($testToKeep && $id){
 
-				$this->insert_order_only_item($id, $name, $sku);
+				$this->insert_order_only_item($id, $sku);
 
-			}elseif ($id && $this->remove_product_existing($id)){
+			}
+			elseif ($id && $this->remove_product_existing($id)){
 
 				$this->spi->result['products_removed'][] = $sku;
 
@@ -481,13 +482,12 @@ class spi_model {
 		}
 	}
 
-	function insert_order_only_item($id, $name, $sku){
+	function insert_order_only_item($id, $sku){
 
 		if(!$this->in_order_only_items($sku)){
 
 			global $wpdb;
-			$safename = str_replace("'", "''", $name);
-			$query = "INSERT INTO {$wpdb->prefix}shopp_order_only_items (id,name,sku) VALUES ({$id}, '{$safename}', '{$sku}')";
+			$query = "INSERT INTO {$wpdb->prefix}shopp_order_only_items (id,sku) VALUES ({$id}, '{$sku}')";
 			$added = $wpdb->query($query);
 			$this->spi->result['added_to_order_only'] += 1;
 
@@ -761,7 +761,7 @@ class spi_model {
 							if ($this->Shopp->Settings->get('catskin_importer_empty_first') == 'no') {
 								$sku = $this->get_mapped_var($csv_product_id,'spi_sku');
 								$id = $this->product_exists($sku);
-								if ($id) $_SESSION['spi_products_to_remove'][$sku] = $name;
+								if ($id) $_SESSION['spi_products_to_remove'][] = $sku;
 							}
 							$this->result['filtered'] += $this->remove_product_import($csv_product_id);
 							$_SESSION['spi_products_filtered_cat'][] = $csv_product_id;
