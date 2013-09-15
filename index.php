@@ -241,17 +241,7 @@ SQL;
 		}
 
 	}
-	function map_categories()
-	{
-		echo "Map EDGE Categories - TODO";
-		// global $MapCategories;
-		// set_error_handler(array(&$this, 'spi_errors'));
-		// $this->shopp_init();
-		// $MapCategories = new MapCategories($this);
-		// $result = $MapCategories->process_categories(true,false,$this);
-		// $this->log($result);
-		// if (!$this->auto_import) echo $result;
-	}
+
 	function find_csvs($dir)
 	{
 
