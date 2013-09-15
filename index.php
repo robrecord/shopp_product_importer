@@ -547,6 +547,11 @@ SQL;
 			global $wpdb;
 			$wpdb->show_errors();
 		}
+		$_SESSION['spi_products_filtered_cat']  = array();
+		$_SESSION['spi_products_filtered_img']  = array();
+		$_SESSION['spi_products_filtered_inv'] = array();
+		$_SESSION['spi_products_to_remove'] = array();
+
 		$this->log(' ajax_import_csv',4);
 		if ( !$this->column_map ) $this->map_columns_from_saved_options();
 
