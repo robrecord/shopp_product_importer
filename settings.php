@@ -531,7 +531,7 @@
 							{
 								$("#imported-rows").append(response);
 								next_image();
-						}
+							}
 
 						}
 					});
