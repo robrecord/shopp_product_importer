@@ -212,6 +212,7 @@ class spi_model {
 	}
 	function image_output_html($output)
 	{
+		$return = '';
 		foreach ($output as $o) {
 			$return .= $this->image_report_html($o);
 		}
