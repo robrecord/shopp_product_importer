@@ -93,7 +93,7 @@ class spi_model {
 
 		// 2 - Initialize Categories
 		$this->spi->log( 'Processing products - Initialize Categories' );
-		$this->categories = array();
+		$this->categories = $this->edge_categories = array();
 		while ( $p_row = $this->get_next_product( 10 ) ) {
 			$this->initialize_categories( $p_row->spi_id );
 			$this->process_set( $p_row->spi_id, 40 );
@@ -315,38 +315,20 @@ class spi_model {
 			// 		$catalogs[] = $this->create_tag_catalog_sql($map_product,$tag,$used_tags);
 			// 	}
 			// }
-		}
+			// var_dump($map_product);
 
-		foreach ($this->categories as $id=>$category) {
-			$prefix = 'edge_';
-			if (!is_null($pos=strpos($id, $prefix)) ) { // if it's an edge category
-				if (is_null($category->exists)) {
-					$edge_index = substr($id, $pos+strlen($prefix));
-					if (!$edge_categories[$edge_index]) {
-						$edge_categories[$edge_index] = $this->create_category_sql($category);
-					}
-				}
-
-				foreach ($category->csv_product_ids as $csv_id) {
-					if ($csv_id == $map_product->csv_id) {
-						$edge_catalogs[] = $this->create_category_catalog_sql( $csv_id, $category->id );
-					}
-				}
-
-			} elseif (in_array($map_product->csv_id,$category->csv_product_ids,true)) {
-				if (array_key_exists($category->id, $used_categories) === false && is_null($category->exists)) {
-
-					$used_categories[$category->id] = $category->id;
-					$categories[] = $this->create_category_sql($category);
-					$next_category_id++;
-				}
-
-				foreach ($category->csv_product_ids as $csv_id) {
-					if ($csv_id == $map_product->csv_id) {
-						$catalogs[] = $this->create_category_catalog_sql( $csv_id, $category->id );
-					}
+			// Assign categories
+			foreach ($this->edge_categories as $edge_id=>$skus) {
+				// foreach ($skus as $sku) {
+				if (in_array($map_product->sku, $skus)) {
+					$cat_map_results = $wpdb->get_results("SELECT category FROM {$wpdb->prefix}shopp_edge_category_map WHERE `edge_category`='$edge_id';");
+					$edge_cats = array();
+					foreach( $cat_map_results as $cat_map )
+						$edge_cats[] = (int) $cat_map->category;
+					wp_set_object_terms($map_product->id, $edge_cats, 'shopp_category' );
 				}
 			}
+
 		}
 
 		unset($spi_files);
@@ -393,11 +375,6 @@ class spi_model {
 			$this->spi->result['categories'] = $this->chunk_query($categories,$query);
 		}
 
-		//Import Edge Categories
-		if (isset($edge_categories)) {
-			$query = " INSERT INTO {$wpdb->prefix}shopp_edge_category (id,parent,name,slug,uri,description,spectemplate,facetedmenus,variations,pricerange,priceranges,specs,options,prices,created,modified) VALUES %values%; ";
-			$this->spi->result['edge_categories'] = $this->chunk_query($edge_categories,$query);
-		}
 
 		//Import Catalogs
 		if (isset($catalogs)) {
@@ -405,11 +382,6 @@ class spi_model {
 			$this->spi->result['catalogs'] = $this->chunk_query($catalogs,$query);
 		}
 
-		//Import EDGE Category Catalogs
-		if (isset($edge_catalogs)) {
-			$query = " INSERT INTO {$wpdb->prefix}shopp_edge_catalog (product,parent,type,created,modified) VALUES %values%; ";
-			$this->spi->result['catalogs'] = $this->chunk_query($edge_catalogs,$query);
-		}
 
 		//Import Specs
 		if (isset($specs)) {
@@ -925,34 +897,9 @@ class spi_model {
 			$mset = $this->map[$i];
 			switch ($mset['type']) {
 				case 'edge_category_id': // EDGE Category ID
-				case 'edge_category_name': // EDGE Category Name
-				case 'edge_category_type': // EDGE Category Type
-				case 'edge_category_desc': // EDGE Category Description
-					$type = substr( $mset['type'], strlen('edge_category_') ); // $type = id, name, type or desc
+					$this->edge_categories[$this->get_mapped_var( $csv_product_id, $mset[ 'header' ] )][] = $this->get_mapped_var( $csv_product_id, 'spi_sku' );
+					return;
 
-					$this->edge_cat_builder[ $csv_product_id ][ $type ] =
-						ucwords( strtolower( $this->get_mapped_var( $csv_product_id, $mset[ 'header' ] ) ) );
-					if ( $cat_array = $this->make_edge_categories( $csv_product_id ) ) {
-						$edge=true;
-					} else unset($cat_array);
-					break;
-				case 'category':
-					//cat_string = the raw slash delimited category data
-					$cat_string = $this->get_mapped_var( $csv_product_id, $mset['header'] );
-					$cat_array = array( explode( '/', $cat_string ) );
-					break;
-			}
-
-			if( isset( $cat_array ) && !empty( $cat_array ) )
-			{
-				if( ! $cat_string || $this->any_exist( 'spi_category', $csv_product_id ) > 0 )
-				{
-					foreach( $cat_array as $index => &$cats )
-					{
-						$this->make_category( $cats, $cat_index, $parent_index, $csv_product_id, ( $edge ? $index : null ) );
-					}
-				}
-				unset ( $cat_array, $cat_string, $edge );
 			}
 		}
 	}
