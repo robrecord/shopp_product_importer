@@ -368,6 +368,46 @@ class spi_model {
 		return $this->spi->result;
 	}
 
+	function init_map_categories()
+	{
+		global $wpdb;
+		// echo "Map EDGE Categories - TODO";
+		// var_dump($this->products);
+		$query = <<<SQL
+			SELECT t.term_id AS id, slug, parent
+				FROM wp_terms AS t
+				JOIN wp_term_taxonomy as x
+					ON (t.term_id = x.term_id);
+SQL;
+		$terms = $wpdb->get_results( $query );
+
+		foreach( $terms as $term )
+		{
+			$indexed_terms[$term->id] = $term;
+		}
+		foreach( $indexed_terms as $id => $term )
+		{
+			$uri = '';
+			$this->build_uri_from_slugs( $indexed_terms, $id, $uri );
+			$term_uris[ $id ] = $uri;
+		}
+
+		foreach ($term_uris as $term_id => $term_uri) {
+			$terms = $wpdb->update( 'wp_shopp_edge_category_map', array('category_id'=>$term_id), array('category_uri'=>$term_uri) );
+		}
+	}
+
+	function build_uri_from_slugs( $terms, $id, &$uri )
+	{
+		$uri = preg_replace( '/-\d+$/', '', $terms[ $id ]->slug ) . $uri;
+		if( isset($terms[ $terms[ $id ]->parent ] ) )
+		{
+			$uri = '/' . $uri;
+			$parent = $this->build_uri_from_slugs( $terms, $terms[ $id ]->parent, $uri );
+		}
+
+	}
+
 	function truncate_prices_for_product($product_sku) {
 		global $wpdb;
 		$price_row_ids = $wpdb->get_results( "SELECT id FROM {$wpdb->prefix}shopp_price WHERE sku='{$product_sku}'" );
@@ -568,6 +608,30 @@ class spi_model {
 	// 	return "($prices)";
 	// }
 
+	function create_edge_category(&$edge_category)
+	{
+		// $edge_category->slug = create_slug($edge_category->value);
+		// var_dump($edge_category->slug);
+		return wp_insert_post( array(
+	        'post_title'        => $edge_category->value,
+	        'post_name'			=> $edge_category->uri,
+	        'post_status'       => 'publish',
+	        'post_type'			=> 'spi_edge_category',
+	        'comment_status'	=> 'closed',
+	        'ping_status'		=> 'closed'
+	    ) );
+	}
+
+	function create_slug($string){
+	   $slug=preg_replace('/[^A-Za-z0-9-]+/', '-', $string);
+	   return $slug;
+	}
+
+	// function create_product_meta_for_edge_category($new_post_id, $new_term_ids)
+	// {
+	// 	return wp_set_object_terms( $new_post_id, $new_term_ids, 'spi_edge_category', true );
+
+	// }
 
 	function create_category_sql($category)
 	{
