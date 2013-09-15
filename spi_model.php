@@ -69,6 +69,8 @@ class spi_model {
 			$this->process_set( $p_row->spi_id, 10 );
 		}
 
+		$this->remove_products($_SESSION['spi_products_to_remove']);
+
 		$count_products = $this->count_products_to_import();
 		$this->spi->log('Products left after filtering: '.$count_products);
 		if( $count_products === 0 ) return 0;
@@ -414,7 +416,6 @@ class spi_model {
 			$this->spi->result['specs'] = $this->chunk_query($specs,$query);
 		}
 
-		$this->remove_products($_SESSION['spi_products_to_remove']);
 
 
 		return $this->spi->result;
