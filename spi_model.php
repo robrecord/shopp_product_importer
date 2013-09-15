@@ -1691,13 +1691,20 @@ class spi_model {
 	function remove_product_existing( $id ) {
 		global $wpdb;
 		$id = trim($id);
-		$query = "DELETE FROM {$wpdb->prefix}shopp_catalog WHERE product = '{$id}'";
-		$result = $wpdb->query($query);
-		$query = "DELETE FROM {$wpdb->prefix}shopp_product WHERE id = '{$id}'";
-		$result = $wpdb->query($query);
-		$query = "DELETE FROM {$wpdb->prefix}shopp_price WHERE product = '{$id}'";
-		$result = ($wpdb->query($query) + $result)/2;
-		return $result;
+		wp_delete_post( (int) $id, true );
+
+		$image_caches = $wpdb->get_results( "SELECT id FROM wp_shopp_meta WHERE context='product' AND type='image' AND parent='{$id}';" );
+		foreach( $image_caches as $image_cache)
+		{
+			$wpdb->query( "DELETE FROM wp_shopp_meta WHERE context='image' AND parent='$image_cache->id';" );
+		}
+		$wpdb->query( "DELETE FROM wp_shopp_meta WHERE context='product' AND parent='$id';" );
+		$prices = $wpdb->get_results( "SELECT id FROM wp_shopp_price WHERE product='$id';" );
+		$wpdb->query( "DELETE FROM wp_shopp_price WHERE product='$id';" );
+		foreach ($prices as $price) {
+			$wpdb->query( "DELETE FROM wp_shopp_meta WHERE context='price' AND parent='{$price->id}';" );
+		}
+		return 1;
 	}
 
 	function remove_product_import( $id ) {
