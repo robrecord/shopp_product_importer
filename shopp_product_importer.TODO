@@ -1,0 +1,23 @@
+test:
+  ✔ products added @done (13-09-15 15:58)
+  ✔ products updated @done (13-09-15 15:58)
+  ☐ products removed inventory
+  ☐ products filtered category
+  ☐ products filtered no image
+  ☐ products order only
+  ☐ products no longer order only
+  ☐ categories created
+  ☐ prices updated
+  ☐ names updated
+  ☐ images updated
+  ☐ showing on front end
+  ☐ order_only products added
+  ☐ order_only products removed.
+develop:
+  ☐ map edge categories to shopp categories
+  ✔ order only table converted @done (13-09-15 15:59)
+  ✔ order only cats table converted @done (13-09-15 15:59)
+  ✔ category map converted @done (13-09-15 15:59)
+  ✔ edge cats converted @done (13-09-15 15:59)
+  ✔ edge product map converted @done (13-09-15 15:59)
+  ☐
