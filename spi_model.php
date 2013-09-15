@@ -349,43 +349,13 @@ class spi_model {
 			}
 		}
 
-		//Import Product Lines
-		if (isset($insert_products)) {
-			$query = " INSERT INTO {$wpdb->prefix}shopp_product (id,name,slug,summary,description,publish,featured,variations,options,created,modified) VALUES %values%;";
-			$this->spi->result['products_imported'] = $this->chunk_query($insert_products,$query);
-		}
-
-		//Import Prices
-		if (isset($prices)) {
-			$query = " INSERT INTO {$wpdb->prefix}shopp_price (product,options,optionkey,label,context,type,sku,price,saleprice,weight,shipfee,stock,inventory,sale,shipping,tax,donation,sortorder,created,modified) VALUES %values%; ";
-			$this->spi->result['prices'] = $this->chunk_query($prices,$query);
-		}
-
-		//Import Tags
-		if (isset($tags)) {
-			$query = " INSERT INTO {$wpdb->prefix}shopp_tag (id,name,created,modified) VALUES %values%; ";
-			$this->spi->result['tags'] = $this->chunk_query($tags,$query);
-		}
-
-		//Import Categories
-		if (isset($categories)) {
-			$query = " INSERT INTO {$wpdb->prefix}shopp_category (id,parent,name,slug,uri,description,spectemplate,facetedmenus,variations,pricerange,priceranges,specs,options,prices,created,modified) VALUES %values%; ";
-			$this->spi->result['categories'] = $this->chunk_query($categories,$query);
-		}
 
 
-		//Import Catalogs
-		if (isset($catalogs)) {
-			$query = " INSERT INTO {$wpdb->prefix}shopp_catalog (product,parent,type,created,modified) VALUES %values%; ";
-			$this->spi->result['catalogs'] = $this->chunk_query($catalogs,$query);
-		}
 
 
-		//Import Specs
-		if (isset($specs)) {
-			$query = " INSERT INTO {$wpdb->prefix}shopp_meta (parent,name,value,type,created,modified) VALUES %values%; ";
-			$this->spi->result['specs'] = $this->chunk_query($specs,$query);
-		}
+
+
+
 
 
 
