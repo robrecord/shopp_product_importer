@@ -144,9 +144,9 @@ class spi_model {
 								{
 									$error = false;
 									$report = true;
-									$url_template = home_url('/'.$this->Shopp->Settings->get('catskin_importer_imageformat'));
-									$url = str_replace('{val}',$filename,$url_template);
-									if ( $this->Shopp->Settings->get( 'catskin_importer_import_only_products_with_images' ) == 'yes' || $this->file_exists_from_url($url) )
+									$url_template = home_url( '/'.$this->Shopp->Settings->get('catskin_importer_imageformat') );
+									$url = str_replace('{val}', $filename, $url_template);
+									if ( ! $this->Shopp->Settings->get( 'catskin_importer_import_only_products_with_images' ) == 'yes' || $this->file_exists_from_url($url) )
 									{
 										if ($result = $this->_populate_image($p_set,$pmap,$mset))
 										{
@@ -473,7 +473,7 @@ SQL;
 		return $wpdb->insert( "{$wpdb->prefix}shopp_meta", (array) $new_meta_data );
 	}
 
-	function remove_products($items){
+	function remove_products( $items){
 
 		foreach($items as $sku) {
 			$pieces = explode("-", $sku);
@@ -796,7 +796,7 @@ SQL;
 					if ($this->any_exist($mset['header'],$csv_product_id) > 0) {
 						$cat_id = $this->get_mapped_var($csv_product_id,$mset['header']);
 						if (!in_array($cat_id,$allowed_categories)) {
-								$sku = $this->get_mapped_var($csv_product_id,'spi_sku');
+							$sku = $this->get_mapped_var($csv_product_id,'spi_sku');
 							if ($this->Shopp->Settings->get('catskin_importer_empty_first') == 'no') {
 								$id = $this->product_exists($sku);
 								if ($id) $_SESSION['spi_products_to_remove'][] = $sku;
@@ -816,22 +816,22 @@ SQL;
 
 		// foreach ($this->examine_data as $key=>$row) {
 		// 	switch ($row[ $this->column_map['edge_inventory_status'] ]) {
-		// 					case 'I':	// I    In-stock
-		// 					break;
-		// 					case 'X':	// X    Scrapped
-		// 					case '-':	// -	Deleted
-		// 					case 'L':	// L    Layaway
-		// 					case 'S':	// S    Sold
-		// 					case 'V':	// V    Returned to vendor
-		// 					case 'M':	// M    Missing
-		// 					case 'U':	// U    Consumed as part (assembled into item or used in repair job)
-		// 					default:
+		// 		case 'I':	// I    In-stock
+		// 		break;
+		// 		case 'X':	// X    Scrapped
+		// 		case '-':	// -    Deleted
+		// 		case 'L':	// L    Layaway
+		// 		case 'S':	// S    Sold
+		// 		case 'V':	// V    Returned to vendor
+		// 		case 'M':	// M    Missing
+		// 		case 'U':	// U    Consumed as part (assembled into item or used in repair job)
+		// 		default:
 
 		// 			if ( $this->Shopp->Settings->get('catskin_importer_empty_first') == 'no' )
 		// 			{
 		// 				// record lines to remove from DB
 		// 				$_SESSION[ 'spi_products_to_remove' ][ $row[ $this->column_map[ 'sku' ] ] ] = $row[ $this->column_map[ 'name' ] ];
-		// 				}
+		// 			}
 		// 			else
 		// 			{
 		// 				// or if starting from empty, log which were filtered out
