@@ -261,7 +261,6 @@ class spi_model {
 			// or add, we just want to delete from that table since it is now in stock
 			if ($this->in_order_only_items($map_product->sku)){
 				$this->delete_from_order_only($map_product->sku);
-				$this->spi->result['remove_from_order_only'] += 1;
 				continue;
 			}
 
@@ -475,35 +474,36 @@ SQL;
 
 	function remove_products( $items){
 
-		foreach($items as $sku) {
-			$pieces = explode("-", $sku);
+		foreach($items as $item) {
+			$pieces = explode("-", $item['sku']);
 			$category = $pieces[1];
 			$testToKeep = $this->test_if_order_only_category($category);
 
-			$id = $this->product_exists($sku);
+			$id = $this->product_exists($item['sku']);
 
 			if($testToKeep && $id){
 
-				$this->insert_order_only_item($id, $sku);
+				$this->insert_order_only_item($id, $item['name'], $item['sku']);
 
 			}
 			elseif ($id && $this->remove_product_existing($id)){
 
-				$this->spi->result['products_removed'][] = $sku;
+				$this->spi->result['products_removed'][] = $item['sku'];
 
 			}
 
 		}
 	}
 
-	function insert_order_only_item($id, $sku){
+	function insert_order_only_item($id, $name, $sku){
 
 		if(!$this->in_order_only_items($sku)){
 
 			global $wpdb;
-			$query = "INSERT INTO {$wpdb->prefix}shopp_order_only_items (id,sku) VALUES ({$id}, '{$sku}')";
+			$safename = str_replace("'", "''", $name);
+			$query = "INSERT INTO {$wpdb->prefix}shopp_order_only_items (id,name,sku) VALUES ({$id}, '{$safename}', '{$sku}')";
 			$added = $wpdb->query($query);
-			$this->spi->result['added_to_order_only'] += 1;
+			$this->spi->result['added_to_order_only'][] = $sku;
 
 		}
 
@@ -522,6 +522,7 @@ SQL;
 		$result = $wpdb->query($query);
 		$query = "DELETE FROM {$wpdb->prefix}shopp_importer WHERE spi_sku='{$sku}'";
 		$result = $wpdb->query($query);
+		$this->spi->result['remove_from_order_only'][] = $sku;
 		return $result;
 
 	}
@@ -797,9 +798,10 @@ SQL;
 						$cat_id = $this->get_mapped_var($csv_product_id,$mset['header']);
 						if (!in_array($cat_id,$allowed_categories)) {
 							$sku = $this->get_mapped_var($csv_product_id,'spi_sku');
+							$name = $this->get_mapped_var($csv_product_id,'spi_name');
 							if ($this->Shopp->Settings->get('catskin_importer_empty_first') == 'no') {
 								$id = $this->product_exists($sku);
-								if ($id) $_SESSION['spi_products_to_remove'][] = $sku;
+								if ($id) $_SESSION['spi_products_to_remove'][] = array('sku'=>$sku, 'name'=>$name);
 							}
 							$this->result['filtered'] += $this->remove_product_import($csv_product_id);
 							$_SESSION['spi_products_filtered_cat'][] = $sku;
@@ -862,9 +864,11 @@ SQL;
 							case 'U':	// U    Consumed as part (assembled into item or used in repair job)
 							default:
 								$sku = $this->get_mapped_var($csv_product_id,'spi_sku');
+								$name = $this->get_mapped_var($csv_product_id,'spi_name');
+
 								$id = $this->product_exists($sku);
 
-								if ($id) $_SESSION[ 'spi_products_to_remove' ][] = $sku;
+								if ($id) $_SESSION['spi_products_to_remove'][] = array('sku'=>$sku, 'name'=>$name);
 								else $_SESSION[ 'spi_products_filtered_inv' ][] = $sku;
 								$this->remove_product_import( $csv_product_id );
 

@@ -88,8 +88,8 @@ class shopp_product_importer {
 		'products_removed'=>array(),
 		'products_updated'=>array(),
 		'edge_categories_added'=>array(),
-		'added_to_order_only'=>0,
-		'remove_from_order_only'=>0
+		'added_to_order_only'=>array(),
+		'remove_from_order_only'=>array()
 	);
 
 	function spi_errors($errno, $errstr,$errfile, $errline)
@@ -661,16 +661,19 @@ SQL;
 			foreach ($values as $sku)
 						$temp .= "\n\t$sku";
 			return $values = $temp;
-			}
+		}
 
 
 
-			extrapolate_result($_SESSION['spi_products_filtered_img']);
-			extrapolate_result($_SESSION['spi_products_filtered_cat']);
-			extrapolate_result($_SESSION['spi_products_filtered_inv']);
+		extrapolate_result($_SESSION['spi_products_filtered_img']);
+		extrapolate_result($_SESSION['spi_products_filtered_cat']);
+		extrapolate_result($_SESSION['spi_products_filtered_inv']);
 		extrapolate_result($this->result['products_imported']);
 		extrapolate_result($this->result['products_removed']);
 		extrapolate_result($this->result['products_updated']);
+		extrapolate_result($this->result['added_to_order_only']);
+		extrapolate_result($this->result['remove_from_order_only']);
+
 		// $edge_categories_added = extrapolate_result( $this->result['edge_categories'] );
 
 		// foreach ($this->result as &$r) $r = (int) $r;
