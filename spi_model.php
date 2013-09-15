@@ -130,9 +130,9 @@ class spi_model {
 			//Debugging Any Images Exist... Check console or remove debug line from function any_images_exist
 			if (($images_left=$this->any_images_exist()) > 0)
 			{
-				if ($p_row = $this->get_next_product(20))
+				if ($p_row = $this->get_next_product(60))
 				{
-					$p_set = $this->get_next_product(20,true);
+					$p_set = $this->get_next_product(60,true);
 					foreach ($p_set as $pmap)
 					{
 						foreach ($this->map as $mset)
@@ -178,7 +178,7 @@ class spi_model {
 							}
 						}
 					}
-					$this->process_product( $p_row->id, 60 );
+					$this->process_product( $p_row->id, 70 );
 					if ($output) {
 						if ($this->spi->auto_import) return true;
 						else return $this->image_output_html($output);
