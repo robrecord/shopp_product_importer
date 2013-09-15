@@ -590,6 +590,7 @@ SQL;
 		// assemble data
 		$chunk_size = 30;
 		for ( $slice = 0; $slice < count( $this->examine_data ); $slice += $chunk_size ) {
+			$rows = array();
 			foreach( array_slice( $this->examine_data, $slice, $chunk_size ) as $row ) {
 				$values = array();
 				foreach( $this->column_map as $field_name => $column_id ) {
