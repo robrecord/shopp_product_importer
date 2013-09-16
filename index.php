@@ -275,7 +275,7 @@ SQL;
 					return false;
 				}
 			} else {
-				$this->log("Could not see any csv files");
+				$this->log("Could not see any csv files in $this->csv_upload_path");
 				return false;
 			}
 			return $csvs;
