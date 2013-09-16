@@ -127,7 +127,7 @@ class shopp_product_importer {
 				$this->automatic_start();
 			}
 		}
-
+	}
 
 		function shopp_importer_activation()
 		{
@@ -159,15 +159,14 @@ CREATE TABLE IF NOT EXISTS `wp_shopp_order_only_cats` (
 SQL;
 			$wpdb->query($create_order_only_items_table);
 			$wpdb->query($create_order_only_cats_table);
-
 		}
-		/* This function is executed when the user deactivates the plugin */
+
 		function shopp_importer_deactivation()
 		{
+		/* This function is executed when the user deactivates the plugin */
 		  wp_clear_scheduled_hook('shopp_auto_import');
 		  wp_clear_scheduled_hook('shopp_auto_import_dev');
 		}
-	}
 	function automatic_start_test() {
 		$this->auto_import_test = true;
 		$this->auto_import = true;
