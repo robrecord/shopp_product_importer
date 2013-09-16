@@ -736,7 +736,7 @@ HTML;
 			if (!file_exists($csvs_path)) mkdir($csvs_path);
 			chmod($csvs_path,0755);
 			$uploaded_file = file_get_contents($_FILES['csvupload']['tmp_name']);
-			$handle = fopen($csvs_path.'/'.$file_name, "w");
+			$handle = @fopen($csvs_path.'/'.$file_name, "w");
 			fwrite($handle, $uploaded_file );
 			echo "File uploaded successfully: ".$csvs_path.'/'.$file_name;
 			fclose($handle);
@@ -850,16 +850,19 @@ HTML;
 
 	public function log($message,$level=4)
 	{
-		$log_name = ($this->auto_import) ? 'import.log' : 'import_manual.log';
-		$fh = fopen( "$this->csv_root/$log_name", 'a' ) or die( "can't open $log_name" );
-
 		if( $this->Shopp->Settings->get( 'catskin_importer_debug_output' ) == 'yes' )
 			echo "$message<br>\n";
 
-		$message = "$message  ".$this->report_memory();
+		$log_name = ($this->auto_import) ? 'import.log' : 'import_manual.log';
 
-		fwrite( $fh, date('Y-m-d H:i:s')." - $message\n" );
-		fclose( $fh );
+		if( file_exists("$this->csv_root")) {
+			$fh = fopen( "$this->csv_root/$log_name", 'a' );
+
+			$message = "$message  ".$this->report_memory();
+
+			fwrite( $fh, date('Y-m-d H:i:s')." - $message\n" );
+			fclose( $fh );
+		}
 
 		return $message;
 
