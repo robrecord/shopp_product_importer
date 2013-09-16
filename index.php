@@ -58,6 +58,9 @@ class shopp_product_importer {
 	public $csv_get_path;
 	public $csv_archive_path;
 	public $image_put_path;
+	public $class_path;
+	public $model_path;
+	public $flow_path;
 	public $basepath;
 	public $path;
 	public $directory;
@@ -79,9 +82,6 @@ class shopp_product_importer {
 	public $debug = true;
 	public $auto_import = false;
 
-	public $class_path;
-	public $model_path;
-	public $flow_path;
 
 	public $result = array(
 		'products_imported'=>array(),
