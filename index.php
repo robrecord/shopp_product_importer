@@ -218,7 +218,7 @@ SQL;
 	}
 	function find_csvs($dir)
 	{
-
+		$dir = $dir.'/';
 		if ($handle = opendir($dir)) {
 			$csvs = array();
 			$latest_modified = false;
@@ -253,12 +253,12 @@ SQL;
 					if (!(file_exists($this->csv_archive_path)) && !(mkdir($this->csv_archive_path))) {
 						$this->log("Could not create import archive directory");
 						if (!(rename($this->csv_get_path,$newpath=substr($this->csv_get_path, 0, -1)."_".date('Y-m-d_H-i-s'))))  {
-							$his->log("Could not rename get_path to $newpath");
+							$this->log("Could not rename get_path to $newpath");
 							// return false;
 						}
 						return false;
 					}
-					if (!(rename($this->csv_get_path,$newpath=substr($this->csv_archive_path.'edge/', 0, -1)."_".date('Y-m-d_H-i-s'))))  {
+					if (!(rename($this->csv_get_path,$newpath=substr($this->csv_archive_path.'/edge/', 0, -1)."_".date('Y-m-d_H-i-s'))))  {
 						$this->log("Could not rename get_path to $newpath");
 						// return false;
 					}
@@ -326,14 +326,14 @@ SQL;
 		$this->class_path = "{$this->basepath}/{$this->directory}/classes";
 		$this->model_path = "{$this->class_path}/model";
 		$this->flow_path = "{$this->class_path}/flow";
-		$this->csv_root = ABSPATH . $this->Shopp->Settings->get('catskin_importer_csv_directory') . '/';
+		$this->csv_root = ABSPATH . $this->Shopp->Settings->get('catskin_importer_csv_directory');
 		// $this->csv_upload_path = ABSPATH.'../wordpress2/edge3/';
 		// $this->csv_get_path = WP_CONTENT_DIR.'/edge/';
-		$this->csv_get_path = $this->csv_root.'import/';
-		$this->csv_upload_path = $this->csv_root.'upload/';
-		$this->csv_archive_path = $this->csv_root.'archive/';
-		$this->html_get_path = $this->csv_root.'product_htmls/';
-		$this->image_put_path = $this->csv_root.'products/';
+		$this->csv_get_path = $this->csv_root.'/import';
+		$this->csv_upload_path = $this->csv_root.'/upload';
+		$this->csv_archive_path = $this->csv_root.'/archive';
+		$this->html_get_path = $this->csv_get_path.'/product_htmls';
+		$this->image_put_path = $this->csv_get_path;
 	}
 
 	function on_admin_menu($args) {
@@ -733,8 +733,8 @@ HTML;
 
 	function ajax_upload_spi_csv_file() {
 		$csvs_path = realpath(dirname(dirname(dirname(__FILE__)))).'/edge/';
-		if (file_exists($csvs_path.$_POST['file_name'])) {
-			unlink($csvs_path.$_POST['file_name']);
+		if (file_exists($csvs_path.'/'.$_POST['file_name'])) {
+			unlink($csvs_path.'/'.$_POST['file_name']);
 		}
 		$file_name = $_POST['file_name'];
 		$path_info = pathinfo($_FILES[$upload_name]['name']);
@@ -742,9 +742,9 @@ HTML;
 			if (!file_exists($csvs_path)) mkdir($csvs_path);
 			chmod($csvs_path,0755);
 			$uploaded_file = file_get_contents($_FILES['csvupload']['tmp_name']);
-			$handle = fopen($csvs_path.$file_name, "w");
+			$handle = fopen($csvs_path.'/'.$file_name, "w");
 			fwrite($handle, $uploaded_file );
-			echo "File uploaded successfully: ".$csvs_path.$file_name;
+			echo "File uploaded successfully: ".$csvs_path.'/'.$file_name;
 			fclose($handle);
 
 		} else {
@@ -857,7 +857,7 @@ HTML;
 	public function log($message,$level=4)
 	{
 		$log_name = ($this->auto_import) ? 'import.log' : 'import_manual.log';
-		$fh = fopen( "{$_SERVER['DOCUMENT_ROOT']}/$log_name", 'a' ) or die( "can't open $log_name" );
+		$fh = fopen( "$this->csv_root/$log_name", 'a' ) or die( "can't open $log_name" );
 
 		if( $this->Shopp->Settings->get( 'catskin_importer_debug_output' ) == 'yes' )
 			echo "$message<br>\n";

@@ -94,9 +94,8 @@
 		}
 
 		if (!$has_error) {
-			$csvs_path = realpath(dirname(dirname(dirname(__FILE__)))).'/edge/';
-			if (file_exists($csvs_path.$file_name)) {
-				unlink($csvs_path.$file_name);
+			if (file_exists($this->csv_get_path.'/'.$file_name)) {
+				unlink($this->csv_get_path.'/'.$file_name);
 			}
 
 			$path_info = pathinfo($_FILES[$upload_name]['name']);
@@ -114,12 +113,12 @@
 			}
 
 			if (is_uploaded_file($_FILES['csvupload']['tmp_name'])) {
-				if (!file_exists($csvs_path)) mkdir($csvs_path);
-				chmod($csvs_path,0755);
+				if (!file_exists($this->csv_get_path)) mkdir($this->csv_get_path);
+				chmod($this->csv_get_path,0755);
 		   		$uploaded_file = file_get_contents($_FILES['csvupload']['tmp_name']);
-		   		$handle = fopen($csvs_path.$file_name, "w");
+		   		$handle = fopen($this->csv_get_path.'/'.$file_name, "w");
 		   		fwrite($handle, $uploaded_file );
-		   		$updated = "File uploaded successfully: ".$csvs_path.$file_name;
+		   		$updated = "File uploaded successfully: ".$this->csv_get_path.'/'.$file_name;
 		   		fclose($handle);
 		   		$this->Shopp->Settings->save('catskin_importer_file',$file_name);
 			} else {
@@ -171,7 +170,7 @@
 				    		<option value='no-file-selected'>Select File</option>
 			<?php
 				while (false !== ($file = readdir($handle))) {
-					$path_parts = pathinfo($this->csv_get_path.$file);
+					$path_parts = pathinfo($this->csv_get_path.'/'.$file);
 					if ($path_parts['extension'] == 'csv') : ?>
 							<option value='<?= $file ?>' <?php echo (attribute_escape($this->Shopp->Settings->get('catskin_importer_file')) == $file) ?
 							    		'selected="selected"' : '' ?>><?= $file ?></option>

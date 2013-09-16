@@ -76,10 +76,10 @@ function import_product_images($product_id,$images) {
 			$Image->type = "image";
 			$Image->name = "original";
 			$Image->filename = $info['basename'];
-			list($Image->width, $Image->height, $Image->mime, $Image->attr) = getimagesize($this->spi->csv_get_path.$info['basename']);
+			list($Image->width, $Image->height, $Image->mime, $Image->attr) = getimagesize($this->spi->csv_get_path.'/'.$info['basename']);
 			$Image->mime = image_type_to_mime_type($Image->mime);
-			$Image->size = filesize($this->spi->csv_get_path.$info['basename']);
-			$Image->store(file_get_contents($this->spi->csv_get_path.$info['basename']));
+			$Image->size = filesize($this->spi->csv_get_path.'/'.$info['basename']);
+			$Image->store(file_get_contents($this->spi->csv_get_path.'/'.$info['basename']));
 			$Image->save();
 
 			do_action('add_product_download',$Image,$img);
@@ -136,8 +136,8 @@ function import_product_images($product_id,$images) {
 				"attr" => $attr);
 
 
-			if (!file_exists($this->image_put_path.$Image->name)) {
-				$_SESSION["spi_message"] = "Downloading image: ".$this->image_put_path.$Image->name;
+			if (!file_exists($this->image_put_path.'/'.$Image->name)) {
+				$_SESSION["spi_message"] = "Downloading image: ".$this->image_put_path.'/'.$Image->name;
 				$Image->data = addslashes(file_get_contents($img));
 			} else unset($Image->data);
 			$Image->save();
@@ -149,7 +149,7 @@ function import_product_images($product_id,$images) {
 			$Small->datatype = "small";
 			$Small->src = $Image->id;
 			$Small->name = "small_".$Image->name;
-			if (!file_exists($this->image_put_path.$Small->name)) {
+			if (!file_exists($this->image_put_path.'/'.$Small->name)) {
 				$Small->data = file_get_contents($img);
 				$SmallSizing = new ImageProcessor2($Small->data,$width,$height);
 				switch ($SmallSettings['sizing']) {
@@ -175,7 +175,7 @@ function import_product_images($product_id,$images) {
 			$Thumbnail->datatype = "thumbnail";
 			$Thumbnail->src = $Image->id;
 			$Thumbnail->name = "thumbnail_".$Image->name;
-			if (!file_exists($this->image_put_path.$Thumbnail->name)) {
+			if (!file_exists($this->image_put_path.'/'.$Thumbnail->name)) {
 				$Thumbnail->data = file_get_contents($img);
 				$ThumbnailSizing = new ImageProcessor2($Thumbnail->data,$width,$height);
 				switch ($ThumbnailSettings['sizing']) {
