@@ -1,23 +1,29 @@
 test:
   ✔ products added @done (13-09-15 15:58)
   ✔ products updated @done (13-09-15 15:58)
-  ☐ products removed inventory
-  ☐ products filtered category
-  ☐ products filtered no image
-  ☐ products order only
-  ☐ products no longer order only
-  ☐ categories created
-  ☐ prices updated
-  ☐ names updated
-  ☐ images updated
-  ☐ showing on front end
-  ☐ order_only products added
-  ☐ order_only products removed.
+  ✔ products removed inventory @done (13-09-15 22:46)
+  ✔ products filtered category @done (13-09-15 22:56)
+  ✔ products filtered no image @done (13-09-15 22:56)
+  ✔ products order only @done (13-09-15 22:56)
+  ✔ products no longer order only @done (13-09-15 22:56)
+  ✔ categories created @done (13-09-15 22:56)
+  ✔ prices updated @done (13-09-15 22:58)
+  ✔ sale price set @done (13-09-15 23:03)
+  ✔ names updated @done (13-09-15 23:04)
+  ✔ images updated @done (13-09-15 23:15)
+  ✔ not imported if image missing @done (13-09-15 23:37)
+  ✔ showing on front end @done (13-09-15 23:37)
+  ✔ order_only products added @done (13-09-15 23:37)
+  ✔ order_only products removed. @done (13-09-15 23:37)
+  ✔ published when imported @done (13-09-16 00:02)
+  ✔ auto import test works @done (13-09-16 01:06)
+  ✔ auto import dirctory moving works @done (13-09-16 01:06)
+  ✔ cron import works @done (13-09-16 02:21)
 develop:
-  ☐ map edge categories to shopp categories
+  ✔ map edge categories to shopp categories @done (13-09-15 23:38)
   ✔ order only table converted @done (13-09-15 15:59)
   ✔ order only cats table converted @done (13-09-15 15:59)
   ✔ category map converted @done (13-09-15 15:59)
   ✔ edge cats converted @done (13-09-15 15:59)
   ✔ edge product map converted @done (13-09-15 15:59)
-  ☐
+  ☐ admin interface for edge category mapping
