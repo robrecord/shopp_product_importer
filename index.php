@@ -83,50 +83,6 @@ class shopp_product_importer {
 	public $auto_import = false;
 
 
-	public $result = array(
-		'products_imported'=>array(),
-		'products_removed'=>array(),
-		'products_updated'=>array(),
-		'edge_categories_added'=>array(),
-		'added_to_order_only'=>array(),
-		'remove_from_order_only'=>array()
-	);
-
-	function spi_errors($errno, $errstr,$errfile, $errline)
-	{
-		if (dirname($errfile)==dirname(__FILE__)) {
-			$this->log("Error: [$errno] $errstr in $errfile on $errline ",0);
-		}
-	}
-
-	function report_errors() {
-		if (isset($_SESSION['spi_errors'])) {
-			echo $this->log($_SESSION['spi_errors']);
-			unset($_SESSION['spi_errors']);
-		}
-	}
-
-	function send_email_report($result) {
-		if (($this->Shopp->Settings->get('catskin_importer_send_email') == 'yes') && function_exists('mail') && (!isset($this->auto_import_test))) {
-			$subject = "***** Report for product upload to Seita Diamond Jewelers site";
-			$body = 'An upload occurred at '.date('g.ia')." today.\n\nHere are the results:\n\n";
-			if (isset($_SESSION['spi_errors']))
-				foreach ($_SESSION['spi_errors'] as $key => $value)
-					$body .= "$key : $value\n";
-			$body .= "$result\n";
-			foreach (array('uploads@seitadiamondjewelers.com') as $to) {
-				if (!mail($to, $subject, $body)) {
-					$this->log("Message delivery to $to failed.");
-					return false;
-				}
-			}
-			return true;
-
-		} else {
-			$this->log("Message delivery not possible.");
-			return false;
-		}
-	}
 
 	function __construct() {
 		global $Shopp;
@@ -877,6 +833,14 @@ HTML;
 		$this->column_map['id'] = $this->column_map['sku'];
 	}
 
+	function remove_image_paths( $value )
+	{
+		foreach( array( '\\', '/' ) as $char )
+			if( $v = strrchr( $value, $char ) )
+				$value = substr( $v, 1 );
+		return $value;
+	}
+
 	// ...lots of your regular code, then:
 	public function __call($name, $args)
 	{
@@ -924,12 +888,44 @@ HTML;
 			) . ' ' . $unit[ $i ];
 	}
 
-	function remove_image_paths( $value )
+
+
+	function spi_errors($errno, $errstr,$errfile, $errline)
 	{
-		foreach( array( '\\', '/' ) as $char )
-			if( $v = strrchr( $value, $char ) )
-				$value = substr( $v, 1 );
-		return $value;
+		if (dirname($errfile)==dirname(__FILE__)) {
+			$this->log("Error: [$errno] $errstr in $errfile on $errline ",0);
+		}
+	}
+
+	function report_errors() {
+		if (isset($_SESSION['spi_errors'])) {
+			echo $this->log($_SESSION['spi_errors']);
+			unset($_SESSION['spi_errors']);
+		}
+	}
+
+	function send_email_report($result) {
+
+		if ( ! isset($this->auto_import_test) && ($this->Shopp->Settings->get('catskin_importer_send_email') == 'yes') ) {
+			if (!function_exists('mail')) {
+				$this->log("Message delivery not possible.");
+				return false;
+			}
+			$subject = "***** Report for product upload to Seita Diamond Jewelers site";
+			$body = 'An upload occurred at '.date('g.ia')." today.\n\nHere are the results:\n\n";
+			if (isset($_SESSION['spi_errors']))
+				foreach ($_SESSION['spi_errors'] as $key => $value)
+					$body .= "$key : $value\n";
+			$body .= "$result\n";
+			// foreach (array('uploads@seitadiamondjewelers.com') as $to) {
+			foreach (array('rob@robrecord.com') as $to) {
+				if (!mail($to, $subject, $body)) {
+					$this->log("Message delivery to $to failed.");
+					return false;
+				}
+			}
+			return true;
+		}
 	}
 }
 
