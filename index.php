@@ -83,6 +83,7 @@ class shopp_product_importer {
 	public $auto_import = false;
 
 
+	public $result = array();
 
 	function __construct() {
 		global $Shopp;
@@ -446,7 +447,21 @@ SQL;
 
 	function truncate_all_prior_to_import() {
 
-		if ($this->Shopp->Settings->get('catskin_importer_empty_first') == 'yes') {
+		$this->result = array(
+			'products_imported'=>array(),
+			'products_removed'=>array(),
+			'products_updated'=>array(),
+			'edge_categories_added'=>array(),
+			'added_to_order_only'=>array(),
+			'remove_from_order_only'=>array()
+		);
+
+		$_SESSION['spi_products_filtered_cat']  = array();
+		$_SESSION['spi_products_filtered_img']  = array();
+		$_SESSION['spi_products_filtered_inv'] = array();
+		$_SESSION['spi_products_to_remove'] = array();
+
+		if ( $this->Shopp->Settings->get('catskin_importer_empty_first') == 'yes' || !$this->auto_import ) {
 			global $wpdb;
 			while( count( $shopp_product_posts = get_posts( array(
 				'post_type'        => 'shopp_product',
@@ -503,10 +518,6 @@ SQL;
 			global $wpdb;
 			$wpdb->show_errors();
 		}
-		$_SESSION['spi_products_filtered_cat']  = array();
-		$_SESSION['spi_products_filtered_img']  = array();
-		$_SESSION['spi_products_filtered_inv'] = array();
-		$_SESSION['spi_products_to_remove'] = array();
 
 		$this->log(' ajax_import_csv',4);
 		if ( !$this->column_map ) $this->map_columns_from_saved_options();
