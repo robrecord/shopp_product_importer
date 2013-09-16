@@ -112,9 +112,8 @@ class shopp_product_importer {
 			add_filter('shopp_admin_menus', array(&$this, 'shopp_admin_menu'));
 
 			//remove before uploading to production!
-// 			$rand = rand(10, 99);
 			add_action('shopp_auto_import_dev', array(&$this, 'automatic_start_test'));
-			//wp_schedule_single_event(time()+1,'shopp_auto_import_dev');//.$rand);
+			// wp_schedule_single_event(time()+1,'shopp_auto_import_dev');
 			// end remove
 
 			$gofs = get_option( 'gmt_offset' ); // get WordPress offset in hours
