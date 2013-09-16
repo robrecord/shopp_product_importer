@@ -1,4 +1,4 @@
-<?php 
+<?php
 /**
   	Copyright: Copyright � 2010 Catskin Studio
 	Licence: see index.php for full licence details
@@ -198,7 +198,7 @@ function import_product_images($product_id,$images) {
 	function image_exists($parent, $name) {
 		global $wpdb;
 
-		$query = "SELECT `value`, `id` from `{$wpdb->prefix}shopp_meta` WHERE `parent` = '{$parent}'";
+		$query = "SELECT `value`, `id` from `{$wpdb->prefix}shopp_meta` WHERE `context`='product' AND `type`='image' AND `parent` = '{$parent}'";
 
 		$results = $wpdb->get_results($query);
 
