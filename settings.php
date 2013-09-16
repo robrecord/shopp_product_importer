@@ -309,7 +309,7 @@
 					Auto import testing has been activated - please check the log in a few minutes.<br>
 				<? endif ?>
 
-				<a href="?import=shopp_product_importer2&test_auto=true">Test auto import</a>
+				<a href="?import=shopp_product_importer&test_auto=true">Test auto import</a>
 			</p>
 		</div>
 		<div style=" padding:10px; margin:15px 0px; background:#fff; border:1px solid #999;-moz-border-radius:8px;-webkit-border-radius:8px; color:#000; clear:both;">
