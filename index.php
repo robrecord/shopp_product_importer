@@ -179,7 +179,6 @@ SQL;
 		set_error_handler(array(&$this, 'spi_errors'));
 
 		if (($this->Shopp->Settings->get('catskin_importer_auto') == 'yes') || $this->auto_import == true) {
-			$this->auto_import = true;
 			$this->log("# - Started import");
 			$csvs = $this->juggle_files();
 			if (!empty($csvs)) {
@@ -188,10 +187,13 @@ SQL;
 					$this->log("> - Importing CSV $filename");
 					$this->truncate_all_prior_to_import();
 					if ($this->ajax_import_csv($filename))
-						if ($this->ajax_import_products()) {
+					{
+						if ($this->ajax_import_products())
+						{
 							$this->log("starting images");
 							$this->auto_import_images();
 						}
+				}
 				}
 				$this->log("Finished");
 			} else {
