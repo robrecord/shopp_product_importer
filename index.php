@@ -530,6 +530,7 @@ SQL;
 		foreach ($this->column_map as $key=>$value)
 		{
 			$spi_query[] = "spi_{$key} TEXT NULL";
+			$query_headers[] = "spi_$key";
 		}
 		$spi_query = implode( ", \n", $spi_query );
 		$query = <<<SQL
@@ -547,9 +548,6 @@ SQL;
 		$result = $wpdb->query($query);
 
 		// assemble headers
-		foreach ($this->column_map as $key=>$value) {
-			$query_headers[] = "spi_$key";
-		}
 		$query_header_sql = implode( ', ', $query_headers );
 
 		// assemble query
@@ -562,8 +560,7 @@ SQL;
 				$values = array();
 				foreach( $this->column_map as $field_name => $column_id ) {
 					$value = $row[ $column_id ];
-
-					if( strpos( $field_name, 'image' ) !== false )
+					if( strpos( $field_name, 'image' ) )
 					{
 						if( $this->Shopp->Settings->get( 'catskin_importer_remove_image_paths' ) == 'yes' )
 							$value = $this->remove_image_paths( $value );
@@ -653,7 +650,6 @@ Products Filtered due to not in stock: {$_SESSION['spi_products_filtered_inv']}
 
 HTML;
 // EDGE Categories Imported: {$edge_categories_added}
-
 // HTML;
 
 		$this->report_errors();

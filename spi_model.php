@@ -1206,34 +1206,6 @@ SQL;
 
 		$row_data = $this->get_importer_data( $map_product );
 
-		// $row_type = isset($groups) ?
-		// 	"N/A" :
-		// 	$this->defval( $row_data->spi_type, "Shipped" );
-		// $row_price = isset($groups) ?
-		// 	"0.00" :
-		// 	$this->defval( $row_data->spi_price, "0.00" );
-
-		// $tc1 = array(
-		// 	'product'  	=> $map_product->id,
-		// 	'options'  	=> "",
-		// 	'optionkey'	=> "0",
-		// 	'label'    	=> "Price & Delivery",
-		// 	'context'  	=> "product",
-		// 	'type'     	=> $row_type,
-		// 	'sku'      	=> isset( $groups ) ? "" : $this->defval( $row_data->spi_sku, "" ),
-		// 	'price'    	=> $this->parse_float($row_price),
-		// 	'saleprice'	=> $this->parse_float((isset($groups))?"0.00":$this->defval($row_data->spi_saleprice,"0.00")),
-		// 	'weight'   	=> $this->parse_float((isset($groups))?"0.000":$this->defval($row_data->spi_weight,"0.000")),
-		// 	'shipfee'  	=> $this->parse_float((isset($groups))?"0.00":$this->defval($row_data->spi_shipfee,"0.00")),
-		// 	'stock'    	=> isset( $groups ) ? "0" : $this->defval( $row_data->spi_stock, "0" ),
-		// 	'inventory'	=> isset( $groups ) ? "off" : $this->defval( $row_data->spi_inventory, "off" ),
-		// 	'sale'     	=> isset( $groups ) ? "off" : $this->defval( $row_data->spi_sale, "off" ),
-		// 	'shipping' 	=> isset( $groups ) ? "on" : $this->defval( $row_data->spi_shipping, "on" ),
-		// 	'tax'      	=> isset( $groups ) ? "on" : $this->defval( $row_data->spi_tax, "on" ),
-		// 	'donation' 	=> $this->defval($row_data->spi_donation,'a:2:{s:3:"var";s:3:"off";s:3:"min";s:3:"off";}'),
-		// 	'sortorder'	=> isset( $groups ) ? "0" : $this->defval( $row_data->spi_order, "0" )
-		// );
-
 		$PriceRow = new ShoppPriceRow( null, array(
 			'product'  	=> $map_product->id,
 			'label'    	=> "Price & Delivery",
@@ -1242,16 +1214,12 @@ SQL;
 			'sku'      	=> $row_data->spi_sku,
 			'price'    	=> (float) $row_data->spi_price,
 			'saleprice'	=> (float) ($row_data->spi_saleprice === $row_data->spi_price) ? 0 : $row_data->spi_saleprice,
-			// TODO meta 'weight'   	=> (float) $row_data->spi_weight,
 			'shipfee'  	=> (float) $row_data->spi_shipfee,
 			'stock'    	=> (int) ( $row_data->spi_stock ? $row_data->spi_stock : 1 ),
-			// 'inventory'	=> isset( $groups ) ? "off" : $this->defval( $row_data->spi_inventory, "off" ),
 			'inventory' => $row_data->spi_inventory ? $row_data->spi_inventory : 'on',
 			'sale'     	=> $row_data->spi_sale ? $row_data->spi_sale : 'off',
-			// 'shipping' 	=> isset( $groups ) ? "on" : $this->defval( $row_data->spi_shipping, "on" ),
 			'shipping'  => $row_data->spi_shipping ? $row_data->spi_shipping : 'off',
 			'tax'      	=> $row_data->spi_tax ? $row_data->spi_tax : 'off',
-			// TODO meta 'donation' 	=> $row_data->spi_donation ? $row_data->spi_donation : 'a:2:{s:3:"var";s:3:"off";s:3:"min";s:3:"off";}',
 			'sortorder'	=> (int) $row_data->spi_order ? $row_data->spi_order : 0,
 			'_meta'		=> array(
 				'weight'   	=> (float) $row_data->spi_weight,
@@ -1316,20 +1284,18 @@ SQL;
 
 	function image_exists($id)
 	{
-		$image_exists = false;
 		foreach ($this->map as $map) {
 			if ($map['type']==='image') {
 				$filename = $this->get_mapped_var($id,$map['header']);
 				if (!empty($filename)) {
 					$url_template = home_url('/'.$this->Shopp->Settings->get('catskin_importer_imageformat'));
 					$url = str_replace('{val}',$filename,$url_template);
-					if ($this->file_exists_from_url($url)) $image_exists = true;
+					if ($this->file_exists_from_url($url)) return true;
 				}
 				break;
 			}
 		}
-
-		return $image_exists;
+		return false;
 
 	}
 
