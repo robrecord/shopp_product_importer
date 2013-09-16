@@ -116,9 +116,9 @@ class shopp_product_importer {
 			// wp_schedule_single_event(time()+1,'shopp_auto_import_dev');
 			// end remove
 
-			$gofs = get_option( 'gmt_offset' ); // get WordPress offset in hours
-			$tz = date_default_timezone_get(); // get current PHP timezone
-			date_default_timezone_set('Etc/GMT'.(($gofs < 0)?'+':'').-$gofs); // set the PHP timezone to match WordPress
+			// $gofs = get_option( 'gmt_offset' ); // get WordPress offset in hours
+			// $tz = date_default_timezone_get(); // get current PHP timezone
+			// date_default_timezone_set('Etc/GMT'.(($gofs < 0)?'+':'').-$gofs); // set the PHP timezone to match WordPress
 
 			// date_default_timezone_set($tz); // set the PHP timezone back the way it was
 			if (array_key_exists("test_auto", $_GET))  {
