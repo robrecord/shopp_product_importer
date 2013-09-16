@@ -886,7 +886,7 @@ SQL;
 		// following code imports only products with images, if set to do so
 		if ( $this->Shopp->Settings
 				->get('catskin_importer_import_only_products_with_images') == 'yes') {
-			if (!$this->image_exists($csv_product_id) ) {
+			if ( !$this->image_exists($csv_product_id) ) {
 				if ($this->remove_product_import($csv_product_id)) $_SESSION['spi_products_filtered_img'][] = $csv_product_id;
 			}
 		}
@@ -1217,7 +1217,7 @@ SQL;
 			'shipfee'  	=> (float) $row_data->spi_shipfee,
 			'stock'    	=> (int) ( $row_data->spi_stock ? $row_data->spi_stock : 1 ),
 			'inventory' => $row_data->spi_inventory ? $row_data->spi_inventory : 'on',
-			'sale'     	=> $row_data->spi_sale ? $row_data->spi_sale : 'off',
+			'sale'     	=> $row_data->spi_sale ? $row_data->spi_sale : ($row_data->spi_saleprice === $row_data->spi_price) ? 'off' : 'on',
 			'shipping'  => $row_data->spi_shipping ? $row_data->spi_shipping : 'off',
 			'tax'      	=> $row_data->spi_tax ? $row_data->spi_tax : 'off',
 			'sortorder'	=> (int) $row_data->spi_order ? $row_data->spi_order : 0,
