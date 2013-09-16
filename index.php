@@ -519,7 +519,7 @@ SQL;
 			$wpdb->show_errors();
 		}
 
-		$this->log(' ajax_import_csv',4);
+		// $this->log(' ajax_import_csv',4);
 		if ( !$this->column_map ) $this->map_columns_from_saved_options();
 
 		$this->ajax_load_file($filename);
@@ -604,10 +604,8 @@ SQL;
 		// $ajax_result = json_encode($result);
 		$message = "CSV imported to database table {$wpdb->prefix}shopp_importer at ".date("H:i:s");
 		$this->log($message);
-		if (!$this->auto_import) echo "<h2 style='border-bottom:1px dotted #333'>$message</h2>";
-		$this->log(' end ajax_import_csv',4);
-
 		if ($this->auto_import) return true;
+		echo "<h2 style='border-bottom:1px dotted #333'>$message</h2>";
 		exit;
 	}
 

@@ -220,8 +220,8 @@ class spi_model {
 	}
 	function file_exists_from_url($url)
 	{
-		if (file_exists($this->path_from_url($url))) return true;
-		else var_dump($this->path_from_url($url));
+		if (file_exists($path = $this->path_from_url($url))) return true;
+		else $this->spi->log("Couldn't find image file at: ".$path);
 	}
 
 	function path_from_url($url)
