@@ -750,7 +750,7 @@ HTML;
 
 	function get_examine_data($filename=false)
 	{
-		if (isset($this->examine_data) && $this->examine_data) return true;
+		if (!$this->auto_import && isset($this->examine_data) && $this->examine_data) return true;
 		else {
 			$spi_files = new spi_files($this);
 			if (!$filename) $filename = $this->Shopp->Settings->get('catskin_importer_file');
