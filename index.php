@@ -453,7 +453,7 @@ SQL;
 			}
 		}
 		include("{$this->basepath}/{$this->directory}/settings.php");
-		$this->log(' settings',4);
+		// $this->log(' settings',4);
 
 	}
 
@@ -461,7 +461,7 @@ SQL;
 	{
 		$this->log('*** START',4);
 		// $this->log();
-		$this->log(' perform_import',4);
+		// $this->log(' perform_import',4);
 
 		check_admin_referer('shopp-importer');
 		// set_time_limit(86400);
@@ -649,7 +649,7 @@ SQL;
 		global $wpdb, $Shopp;
 
 		if ($this->debug) $wpdb->show_errors();
-		$this->log(' ajax_import_products',4);
+		// $this->log(' ajax_import_products',4);
 		$model = new spi_model($this);
 		$count_products = $model->execute();
 		if( $count_products !== 0 )
@@ -800,14 +800,14 @@ HTML;
 			if (strlen($filename) != 0 && $filename != 'no-file-selected') {
 				$has_headers = ($this->Shopp->Settings->get('catskin_importer_has_headers') == 'yes');
 				$this->examine_data = $spi_files->load_examine_csv($filename,$has_headers);
-				$this->log(' examine_data',4);
+				// $this->log(' examine_data',4);
 				return true;
 			}
 		}
 	}
 
 	function ajax_load_file($filename=null) {
-		$this->log(' ajax_load_file start',4);
+		// $this->log(' ajax_load_file start',4);
 
 		if ($this->get_examine_data($filename)) {
 
@@ -832,7 +832,7 @@ HTML;
 			// 	$error = "Could not load CSV";
 			// }
 		}
-		$this->log(' ajax_load_file end',4);
+		// $this->log(' ajax_load_file end',4);
 
 		// return $data;
 	}

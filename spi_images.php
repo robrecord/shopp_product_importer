@@ -48,8 +48,6 @@ function import_product_images($product_id,$images) {
 				if (isset($image_exists)) {
 					foreach ($image_exists as $image_to_delete) {
 						$this->delete_images($product_id, array($image_to_delete->id));
-						$this->spi->log("product ".$product_id."'s image deleted");
-
 					}
 				}
 
@@ -78,7 +76,6 @@ function import_product_images($product_id,$images) {
 			$Image->type = "image";
 			$Image->name = "original";
 			$Image->filename = $info['basename'];
-			$this->spi->log("produt ". $product_id .": saving new image from " . $this->spi->csv_get_path.$info['basename']);
 			list($Image->width, $Image->height, $Image->mime, $Image->attr) = getimagesize($this->spi->csv_get_path.$info['basename']);
 			$Image->mime = image_type_to_mime_type($Image->mime);
 			$Image->size = filesize($this->spi->csv_get_path.$info['basename']);
@@ -97,9 +94,7 @@ function import_product_images($product_id,$images) {
 			$Product->load_data(array('images'));
 			$Product->delete_images($image_ids);
 			$Product->save();
-			$this->spi->log("product ".$product_id."'s images (".implode(', ',$image_ids).") deleted");
 		}
-
 	}
 	function get_product_images($product_id) {
 		$Product = new Product($product_id);

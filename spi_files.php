@@ -34,7 +34,7 @@ class spi_files {
 		ini_set('memory_limit', 256*1024*1024);
 		$examine_data = array();
 		
-		$this->spi->log(' load_examine_csv start');
+		// $this->spi->log(' load_examine_csv start');
 		
 		// if (!$this->examine_data) $this->load_csv($filename, $start_at=1, $records=99999999,$has_header=true)
 		
@@ -55,7 +55,7 @@ class spi_files {
 		
 		
 		
-		$this->spi->log(' start column assign/load_examine_csv');
+		// $this->spi->log(' start column assign/load_examine_csv');
 		
 		$_SESSION['spi_files_col_count'] = count($examine_data[0]);
 
@@ -65,11 +65,11 @@ class spi_files {
 		
 		$_SESSION['spi_files_first_row'] = $examine_data[0];
 		
-		$this->spi->log(' load_examine_csv end');
+		// $this->spi->log(' load_examine_csv end');
 		return $examine_data;
 	}
 	function load_csv($filename, $start_at=1, $records=99999999,$has_header=true) {	 
-		$this->spi->log(' load_csv start');
+		// $this->spi->log(' load_csv start');
 		
 		$row = $has_header ? 0 : 1;
 		if (($handle = fopen($this->csv_get_path . $filename, "r")) !== FALSE) {
