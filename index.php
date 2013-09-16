@@ -609,27 +609,16 @@ SQL;
 		$model = new spi_model($this);
 		$count_products = $model->execute();
 		if( $count_products !== 0 )
-		{
 			$model->execute_mega_query();
-		}
 
-		function extrapolate_result(&$values) {
-			$temp = count($values);
-			foreach ($values as $sku)
-						$temp .= "\n\t$sku";
-			return $values = $temp;
-		}
-
-
-
-		extrapolate_result($_SESSION['spi_products_filtered_img']);
-		extrapolate_result($_SESSION['spi_products_filtered_cat']);
-		extrapolate_result($_SESSION['spi_products_filtered_inv']);
-		extrapolate_result($this->result['products_imported']);
-		extrapolate_result($this->result['products_removed']);
-		extrapolate_result($this->result['products_updated']);
-		extrapolate_result($this->result['added_to_order_only']);
-		extrapolate_result($this->result['remove_from_order_only']);
+		$this->extrapolate_result($_SESSION['spi_products_filtered_img']);
+		$this->extrapolate_result($_SESSION['spi_products_filtered_cat']);
+		$this->extrapolate_result($_SESSION['spi_products_filtered_inv']);
+		$this->extrapolate_result($this->result['products_imported']);
+		$this->extrapolate_result($this->result['products_removed']);
+		$this->extrapolate_result($this->result['products_updated']);
+		$this->extrapolate_result($this->result['added_to_order_only']);
+		$this->extrapolate_result($this->result['remove_from_order_only']);
 
 		// $edge_categories_added = extrapolate_result( $this->result['edge_categories'] );
 
@@ -675,6 +664,13 @@ HTML;
 		if ($this->auto_import) return $result;
 
 		exit();
+	}
+
+	function extrapolate_result(&$values) {
+		$temp = count($values);
+		foreach ($values as $sku)
+					$temp .= "\n\t$sku";
+		return $values = $temp;
 	}
 
 	function ajax_import_images() {
