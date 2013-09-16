@@ -918,8 +918,8 @@ HTML;
 				foreach ($_SESSION['spi_errors'] as $key => $value)
 					$body .= "$key : $value\n";
 			$body .= "$result\n";
-			// foreach (array('uploads@seitadiamondjewelers.com') as $to) {
-			foreach (array('rob@robrecord.com') as $to) {
+			foreach (array('uploads@seitadiamondjewelers.com') as $to) {
+			// foreach (array('rob@robrecord.com') as $to) {
 				if (!mail($to, $subject, $body)) {
 					$this->log("Message delivery to $to failed.");
 					return false;
