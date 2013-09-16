@@ -129,44 +129,44 @@ class shopp_product_importer {
 		}
 	}
 
-		function shopp_importer_activation()
-		{
-			// fix timezone
-			// http://wordpress.org/support/topic/using-php-timezone
-			$gofs = get_option( 'gmt_offset' ); // get WordPress offset in hours
-			$tz = date_default_timezone_get(); // get current PHP timezone
-			date_default_timezone_set('Etc/GMT'.(($gofs < 0)?'+':'').-$gofs); // set the PHP timezone to match WordPress
+	function shopp_importer_activation()
+	{
+		// fix timezone
+		// http://wordpress.org/support/topic/using-php-timezone
+		$gofs = get_option( 'gmt_offset' ); // get WordPress offset in hours
+		$tz = date_default_timezone_get(); // get current PHP timezone
+		date_default_timezone_set('Etc/GMT'.(($gofs < 0)?'+':'').-$gofs); // set the PHP timezone to match WordPress
 
-			wp_schedule_event(mktime(4, 0, 0) + 86400, 'daily', 'shopp_auto_import');
-			//wp_schedule_event(mktime(17, 45, 0) + 86400, 'daily', 'shopp_auto_import_dev');
-			date_default_timezone_set($tz); // set the PHP timezone back the way it was
+		wp_schedule_event(mktime(4, 0, 0) + 86400, 'daily', 'shopp_auto_import');
+		//wp_schedule_event(mktime(17, 45, 0) + 86400, 'daily', 'shopp_auto_import_dev');
+		date_default_timezone_set($tz); // set the PHP timezone back the way it was
 
-			global $wpdb;
+		global $wpdb;
 
-			$create_order_only_items_table = <<<SQL
-CREATE TABLE IF NOT EXISTS `wp_shopp_order_only_items` (
-  `id` bigint(20) NOT NULL,
-  `name` varchar(255) NOT NULL,
-  `sku` varchar(100) NOT NULL,
-  KEY `sku` (`sku`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+		$create_order_only_items_table = <<<SQL
+			CREATE TABLE IF NOT EXISTS `wp_shopp_order_only_items` (
+				`id` bigint(20) NOT NULL,
+				`name` varchar(255) NOT NULL,
+				`sku` varchar(100) NOT NULL,
+				KEY `sku` (`sku`)
+			) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 SQL;
-			$create_order_only_cats_table = <<<SQL
-CREATE TABLE IF NOT EXISTS `wp_shopp_order_only_cats` (
-  `cat_id` int(11) NOT NULL,
-  UNIQUE KEY `cat_id` (`cat_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+		$create_order_only_cats_table = <<<SQL
+			CREATE TABLE IF NOT EXISTS `wp_shopp_order_only_cats` (
+				`cat_id` int(11) NOT NULL,
+				UNIQUE KEY `cat_id` (`cat_id`)
+			) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 SQL;
-			$wpdb->query($create_order_only_items_table);
-			$wpdb->query($create_order_only_cats_table);
-		}
+		$wpdb->query($create_order_only_items_table);
+		$wpdb->query($create_order_only_cats_table);
+	}
 
-		function shopp_importer_deactivation()
-		{
+	function shopp_importer_deactivation()
+	{
 		/* This function is executed when the user deactivates the plugin */
-		  wp_clear_scheduled_hook('shopp_auto_import');
-		  wp_clear_scheduled_hook('shopp_auto_import_dev');
-		}
+	  wp_clear_scheduled_hook('shopp_auto_import');
+	  wp_clear_scheduled_hook('shopp_auto_import_dev');
+	}
 	function automatic_start_test() {
 		$this->auto_import_test = true;
 		$this->auto_import = true;
@@ -193,7 +193,7 @@ SQL;
 							$this->log("starting images");
 							$this->auto_import_images();
 						}
-				}
+					}
 				}
 				$this->log("Finished");
 			} else {
@@ -504,7 +504,7 @@ SQL;
 	function quote_smart($value,$key)
 	{
 		// Quote if not a number or a numeric string
-			if ((!is_numeric($value) || $key=='sku') && $key != 'id') {
+			if ( (!is_numeric($value) || $key=='sku') ) {
 			$value = "'".mysql_real_escape_string($value)."'";
 		}
 		return $value;
