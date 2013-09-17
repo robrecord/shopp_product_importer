@@ -853,16 +853,14 @@ HTML;
 		if( $this->Shopp->Settings->get( 'catskin_importer_debug_output' ) == 'yes' )
 			echo "$message<br>\n";
 
-		$log_name = ($this->auto_import) ? 'import.log' : 'import_manual.log';
+			$log_name = ($this->auto_import) ? 'import.log' : 'import_manual.log';
+			$log_path = "$this->csv_root/$log_name";
+			if ( is_writable($log_path) ) {
 
-		if( file_exists("$this->csv_root")) {
-			$fh = fopen( "$this->csv_root/$log_name", 'a' );
+			}
 
-			$message = "$message  ".$this->report_memory();
-
-			fwrite( $fh, date('Y-m-d H:i:s')." - $message\n" );
-			fclose( $fh );
-		}
+			$message = date('Y-m-d H:i:s')." - $message  ".$this->report_memory()."\n";
+			error_log($message,3,$log_path);
 
 		return $message;
 
