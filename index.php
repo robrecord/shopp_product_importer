@@ -908,7 +908,7 @@ HTML;
 
 	function send_email_report($result) {
 
-		if ( ! isset($this->auto_import_test) && ($this->Shopp->Settings->get('catskin_importer_send_email') == 'yes') ) {
+		if ( isset($this->auto_import) && ! isset($this->auto_import_test) && ($this->Shopp->Settings->get('catskin_importer_send_email') == 'yes') ) {
 			if (!function_exists('mail')) {
 				$this->log("Message delivery not possible.");
 				return false;
