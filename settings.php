@@ -301,15 +301,18 @@
 		</div>
 
 		<div>
+
+		<?php if( ( $this->Shopp->Settings->get('catskin_importer_auto') == 'yes' ) ): ?>
 			<p>
 				Auto import is next scheduled for <?= date('H:i e, D F Y', wp_next_scheduled( 'shopp_auto_import' ) ) ?>
 			</p>
-			<p>
-				<? if (@$_GET["test_auto"]): ?>
-					Auto import testing has been activated - please check the log in a few minutes.<br>
-				<? endif ?>
+		<? endif ?>
 
-				<a href="?import=shopp_product_importer&test_auto=true">Test auto import</a>
+		<? if ( array_key_exists( 'test_auto', $_GET ) )  : ?>
+			<p>Auto import testing has been activated - please check the log in a few minutes.</p>
+		<?// else: ?>
+			<p><a href="?import=shopp_product_importer&test_auto=true">Test auto import</a></p>
+		<? endif ?>
 			</p>
 		</div>
 		<div style=" padding:10px; margin:15px 0px; background:#fff; border:1px solid #999;-moz-border-radius:8px;-webkit-border-radius:8px; color:#000; clear:both;">
@@ -320,7 +323,7 @@
 
 		<div id="spi-show-when-importing" style="display:none;">
 			<div>
-				<div><div id="spi-ajax-loader" style="float:left;"><div style="float:left;"><img src="<?php echo get_option('siteurl').'/wp-content/plugins/'.$this->directory.'/ajax-loader.gif'?>" /></div><div id="progressbar" style="float:left;"></div></div></div>
+				<div><div id="spi-ajax-loader" style="float:left;"><div style="float:left;"><img src="<?php echo WP_CONTENT_URL."/plugins/{$this->directory}/ajax-loader.gif" ?>" /></div><div id="progressbar" style="float:left;"></div></div></div>
 				<div id="imported-rows" style="-moz-border-radius:8px;-webkit-border-radius:8px;-moz-box-shadow: 1px 1px 3px #000; -webkit-box-shadow: 1px 1px 3px #000; border:1px solid #bbb;font-size:12px; font-weight:bold; padding:3px; margin:2px; background:#eee; color:#000; clear:both; padding:10px;"></div>
 			</div>
 		</div>
