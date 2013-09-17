@@ -354,15 +354,7 @@ class spi_model {
 			}
 		}
 
-
-
-
-
-
-
-
-
-
+		wp_cache_flush();
 
 		return $this->spi->result;
 	}
