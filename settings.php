@@ -320,7 +320,7 @@
 
 		<div id="spi-show-when-importing" style="display:none;">
 			<div>
-				<div><div id="spi-ajax-loader" style="float:left;"><div style="float:left;"><img src="<?php echo get_option('siteurl').'/wp-content/plugins/'.$this->directory.'/ajax-loader.gif'?>" /></div><div id="progressbar" style="float:left;"></div></div></div>
+				<div><div id="spi-ajax-loader" style="float:left;"><div style="float:left;"><img src="<?php echo WP_CONTENT_URL."/plugins/{$this->directory}/ajax-loader.gif" ?>" /></div><div id="progressbar" style="float:left;"></div></div></div>
 				<div id="imported-rows" style="-moz-border-radius:8px;-webkit-border-radius:8px;-moz-box-shadow: 1px 1px 3px #000; -webkit-box-shadow: 1px 1px 3px #000; border:1px solid #bbb;font-size:12px; font-weight:bold; padding:3px; margin:2px; background:#eee; color:#000; clear:both; padding:10px;"></div>
 			</div>
 		</div>
