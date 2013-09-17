@@ -103,7 +103,6 @@ class shopp_product_importer {
 			add_action('wp_ajax_import_products', array(&$this, 'ajax_import_products'));
 			add_action('wp_ajax_import_images', array(&$this, 'ajax_import_images'));
 			add_action('wp_ajax_next_image', array(&$this, 'ajax_next_image'));
-			set_error_handler(array(&$this, 'spi_errors'));
 			// $this->ajax_load_file();
 			add_action( 'init', array(&$this, 'register_edge_categories'));
 			add_action('shopp_init', array(&$this, 'shopp_init'));
@@ -416,6 +415,9 @@ SQL;
 
 	function start_import()
 	{
+
+		set_error_handler(array(&$this, 'spi_errors'));
+
 		$this->log('*** START',4);
 		// $this->log();
 		// $this->log(' perform_import',4);
