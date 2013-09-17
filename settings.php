@@ -152,7 +152,7 @@
 			<table class="form-table">
 				<tr class="setting">
 					<td>
-						<label for="catskin_importer_csv_directory"><?php _e('Image url format','Shopp'); ?></label>
+						<label for="catskin_importer_csv_directory"><?php _e('Main Import Directory','Shopp'); ?></label>
 					</td>
 					<td>
 						<?= ABSPATH ?><input name="settings[catskin_importer_csv_directory]" value="<?php echo $this->Shopp->Settings->get('catskin_importer_csv_directory') ?>" id="catskin_importer_csv_directory" onchange="update_required();" size="20">
