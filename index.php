@@ -673,7 +673,7 @@ HTML;
 
 	function extrapolate_result(&$values) {
 		$temp = count($values);
-		foreach ($values as $sku)
+		if ($temp > 0) foreach ($values as $sku)
 					$temp .= "\n\t$sku";
 		return $values = $temp;
 	}
