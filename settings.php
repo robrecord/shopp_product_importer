@@ -131,6 +131,13 @@
 
   	}
  ?>
+ <? if ( array_key_exists( 'test_auto', $_GET ) )  : ?>
+ 	<p>Auto import testing has been activated - please check the log in a few minutes.</p>
+ 	<p><a href="?import=shopp_product_importer">OK - no more testing :)</a></p>
+ 	<?php die("Reload to repeat"); ?>
+ <? else: ?>
+ 	<p><a href="?import=shopp_product_importer&test_auto=upload">Test auto import normally (from upload dir)</a></p>
+ <? endif ?>
 
 	<?php if (!empty($updated)): ?><div id="message" class="updated fade"><p><?php echo $updated; ?></p></div><?php endif; ?>
 
@@ -308,12 +315,6 @@
 			</p>
 		<? endif ?>
 
-		<? if ( array_key_exists( 'test_auto', $_GET ) )  : ?>
-			<p>Auto import testing has been activated - please check the log in a few minutes.</p>
-		<?// else: ?>
-			<p><a href="?import=shopp_product_importer&test_auto=true">Test auto import</a></p>
-		<? endif ?>
-			</p>
 		</div>
 		<div style=" padding:10px; margin:15px 0px; background:#fff; border:1px solid #999;-moz-border-radius:8px;-webkit-border-radius:8px; color:#000; clear:both;">
 			<div style="float:right;" class="ready"><input type="submit" class="button-primary" id="run-spi-import-now" name="perform_import" value="<?php _e('Run Importer','Shopp'); ?>" /></div>
