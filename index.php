@@ -685,8 +685,12 @@ HTML;
 
 	function extrapolate_result(&$values) {
 		$temp = count($values);
-		if ($temp > 0) foreach ($values as $sku)
-					$temp .= "\n\t$sku";
+		if ($temp > 0)
+		{
+			ksort($values);
+			foreach ($values as $sku)
+				$temp .= "\n\t$sku";
+		}
 		return $values = $temp;
 	}
 
