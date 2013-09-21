@@ -72,7 +72,7 @@ class spi_model {
 			$this->process_set( $p_row->spi_id, 10 );
 		}
 
-		$this->remove_products($_SESSION['spi_products_to_remove']);
+		$this->remove_products( $_SESSION['spi_products_to_remove'] );
 
 		$count_products = $this->count_products_to_import();
 		$this->spi->log('Products left after filtering: '.$count_products);
@@ -262,7 +262,8 @@ class spi_model {
 
 			// If the item is in the order_only_items table already, we don't want to update
 			// or add, we just want to delete from that table since it is now in stock
-			if ($this->in_order_only_items($map_product->sku)){
+			if ( $this->in_order_only_items($map_product->sku) )
+			{
 				$this->delete_from_order_only($map_product->sku);
 				continue;
 			}
@@ -516,7 +517,6 @@ SQL;
 			$query = "INSERT INTO {$wpdb->prefix}shopp_order_only_items (id,name,sku) VALUES ({$id}, '{$safename}', '{$sku}')";
 			$added = $wpdb->query($query);
 			$this->spi->result['added_to_order_only'][] = $sku;
-
 		}
 
 	}
@@ -827,34 +827,6 @@ SQL;
 	}
 	function filter_by_inventory_status($csv_product_id)
 	{
-
-		// foreach ($this->examine_data as $key=>$row) {
-		// 	switch ($row[ $this->column_map['edge_inventory_status'] ]) {
-		// 		case 'I':	// I    In-stock
-		// 		break;
-		// 		case 'X':	// X    Scrapped
-		// 		case '-':	// -    Deleted
-		// 		case 'L':	// L    Layaway
-		// 		case 'S':	// S    Sold
-		// 		case 'V':	// V    Returned to vendor
-		// 		case 'M':	// M    Missing
-		// 		case 'U':	// U    Consumed as part (assembled into item or used in repair job)
-		// 		default:
-
-		// 			if ( $this->Shopp->Settings->get('catskin_importer_empty_first') == 'no' )
-		// 			{
-		// 				// record lines to remove from DB
-		// 				$_SESSION[ 'spi_products_to_remove' ][ $row[ $this->column_map[ 'sku' ] ] ] = $row[ $this->column_map[ 'name' ] ];
-		// 			}
-		// 			else
-		// 			{
-		// 				// or if starting from empty, log which were filtered out
-		// 				$_SESSION[ 'spi_products_filtered_inv' ][] = $this->column_map[ 'sku' ];
-		// 			}
-		// 			unset($this->examine_data[$key]);
-		// 		break;
-		// 	}
-		// }
 		foreach ($this->map as $mset) {
 			switch ($mset['type']) {
 				case 'edge_inventory_status':
