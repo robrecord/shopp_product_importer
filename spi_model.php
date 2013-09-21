@@ -813,10 +813,10 @@ SQL;
 							$name = $this->get_mapped_var($csv_product_id,'spi_name');
 							if ($this->Shopp->Settings->get('catskin_importer_empty_first') == 'no') {
 								$id = $this->product_exists($sku);
-								if ($id) $_SESSION['spi_products_to_remove'][] = array('sku'=>$sku, 'name'=>$name);
+								if ($id) $_SESSION['spi_products_to_remove'][$sku] = array('sku'=>$sku, 'name'=>$name);
 							}
 							$this->result['filtered'] += $this->remove_product_import($csv_product_id);
-							$_SESSION['spi_products_filtered_cat'][] = $sku;
+							$_SESSION['spi_products_filtered_cat'][$sku] = $sku;
 							return;
 						}
 					}
