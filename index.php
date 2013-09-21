@@ -465,10 +465,11 @@ SQL;
 			'remove_from_order_only'=>array()
 		);
 
-		$_SESSION['spi_products_filtered_cat']  = array();
-		$_SESSION['spi_products_filtered_img']  = array();
-		$_SESSION['spi_products_filtered_inv'] = array();
-		$_SESSION['spi_products_to_remove'] = array();
+		$_SESSION['spi_products_filtered_cat'] =
+		$_SESSION['spi_products_filtered_img'] =
+		$_SESSION['spi_products_filtered_inv'] =
+		$_SESSION['spi_products_to_remove'] =
+		$_SESSION['spi_products_to_add_order_only'] = array();
 
 		if ( $this->Shopp->Settings->get('catskin_importer_empty_first') == 'yes' || !$this->auto_import ) {
 			global $wpdb;
@@ -663,12 +664,14 @@ HTML;
 
 		$this->report_errors();
 
-		unset($_SESSION['spi_products_filtered_cat']);
-		unset($_SESSION['spi_products_filtered_img']);
-		unset($_SESSION['spi_products_filtered_inv']);
-		unset($_SESSION['spi_products_to_remove']);
-
-		unset($model);
+		unset(
+		    $_SESSION['spi_products_filtered_cat'],
+			$_SESSION['spi_products_filtered_img'],
+			$_SESSION['spi_products_filtered_inv'],
+			$_SESSION['spi_products_to_remove'],
+			$_SESSION['spi_products_to_add_order_only'],
+			$model
+		);
 
 		$result = explode("\n",$result);
 		if (!$this->auto_import) echo implode("<br>",$result);

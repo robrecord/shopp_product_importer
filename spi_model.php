@@ -64,8 +64,11 @@ class spi_model {
 		$this->spi->log('Filtering products');
 		while ( $p_row = $this->get_next_product( 0 ) ) {
 			$this->filter_by_edge_category( $p_row->spi_id );
-			$this->filter_by_inventory_status( $p_row->spi_id );
 			$this->filter_by_image_presence( $p_row->spi_id );
+			$this->process_set( $p_row->spi_id, 5 );
+		}
+		while ( $p_row = $this->get_next_product( 5 ) ) {
+			$this->filter_by_inventory_status( $p_row->spi_id );
 			$this->process_set( $p_row->spi_id, 10 );
 		}
 
@@ -354,7 +357,9 @@ class spi_model {
 			}
 		}
 
-		wp_cache_flush();
+		$this->add_to_order_only( $_SESSION[ 'spi_products_to_add_order_only' ] );
+
+		// wp_cache_flush();
 
 		return $this->spi->result;
 	}
@@ -464,27 +469,42 @@ SQL;
 		return $wpdb->insert( "{$wpdb->prefix}shopp_meta", (array) $new_meta_data );
 	}
 
-	function remove_products( $items){
+	function remove_products( $items ){
 
-		foreach($items as $item) {
-			$pieces = explode("-", $item['sku']);
-			$category = $pieces[1];
-			$testToKeep = $this->test_if_order_only_category($category);
+		foreach( $items as $item ) {
+			extract( $item );
+			$id = $this->product_exists( $sku );
+			if( $id )
+			{
+				if( $this->check_order_only( $sku ) )
+				{
+					$item['id'] = $id;
+					$_SESSION['spi_products_to_add_order_only'][$sku] = $item;
+				}
 
-			$id = $this->product_exists($item['sku']);
-
-			if($testToKeep && $id){
-
-				$this->insert_order_only_item($id, $item['name'], $item['sku']);
-
+				elseif ( $this->remove_product_existing( $id ) )
+					$this->spi->result['products_removed'][] = $sku;
 			}
-			elseif ($id && $this->remove_product_existing($id)){
-
-				$this->spi->result['products_removed'][] = $item['sku'];
-
-			}
-
 		}
+	}
+
+	function add_to_order_only( $items )
+	{
+		foreach ( $items as $item )
+		{
+			extract( $item );
+			if( !isset($id) ) $id = $this->product_exists( $sku );
+			if ( $id )
+				$this->insert_order_only_item( $id, $name, $sku );
+		}
+
+	}
+
+	function check_order_only( $sku )
+	{
+		$pieces = explode("-", $sku);
+		$category = $pieces[1];
+		return $this->test_if_order_only_category($category);
 	}
 
 	function insert_order_only_item($id, $name, $sku){
@@ -839,35 +859,52 @@ SQL;
 			switch ($mset['type']) {
 				case 'edge_inventory_status':
 					if ($this->any_exist($mset['header'],$csv_product_id) > 0) {
-
+						unset( $id );
 						$status = $this->get_mapped_var($csv_product_id,$mset['header']);
-
 
 						switch ($status) {
 							case 'I':	// I    In-stock
 							break;
-							case 'S':	// S    Sold
-							case 'L':	// L    Layaway
-							case 'O':	// O 	Special order
-							case 'X':	// X    Scrapped
-							case '-':	// -	Deleted
-							case 'V':	// V    Returned to vendor
-							case 'M':	// M    Missing
-							case 'U':	// U    Consumed as part (assembled into item or used in repair job)
 							default:
-								$sku = $this->get_mapped_var($csv_product_id,'spi_sku');
-								$name = $this->get_mapped_var($csv_product_id,'spi_name');
+							$sku = $this->get_mapped_var( $csv_product_id, 'spi_sku' );
+							$name = $this->get_mapped_var( $csv_product_id, 'spi_name' );
+							$id = $this->product_exists( $sku );
+							switch ($status) {
+								case 'S':	// S    Sold
+								case 'L':	// L    Layaway
+								case 'O':	// O 	Special order
 
-								$id = $this->product_exists($sku);
+								// if the product isn't yet in the database, but is out of stock (can be reordered), check if we want to add it to the order only table. in which case we have to add the product to the database, not filter it.
+								if( !$id && $this->check_order_only( $sku ) )
+								{
+									// we'll do them all in one go later
+									$_SESSION[ 'spi_products_to_add_order_only' ][ $sku ] = array( 'sku'=>$sku, 'name'=>$name );
+									// just in case it's already been filtered, make sure it's not also being removed.
+									unset( $_SESSION[ 'spi_products_to_remove' ][ $sku ] );
+									break;
+								}
 
-								if ($id) $_SESSION['spi_products_to_remove'][] = array('sku'=>$sku, 'name'=>$name);
-								else $_SESSION[ 'spi_products_filtered_inv' ][] = $sku;
+								case 'X':	// X    Scrapped
+								case '-':	// -	Deleted
+								case 'V':	// V    Returned to vendor
+								case 'M':	// M    Missing
+								case 'U':	// U    Consumed as part (assembled into item or used in repair job)
+								default:
+								// remove product
+								if ($id) {
+									// if it exists, add to a list to remove from the db (this also checks order-only)
+									$_SESSION[ 'spi_products_to_remove' ][$sku] = array('sku'=>$sku, 'name'=>$name);
+								}
+								else
+									// if it doens't exist, simply filter it out of our list of products to import
+									$_SESSION[ 'spi_products_filtered_inv' ][$sku] = $sku;
+
 								$this->remove_product_import( $csv_product_id );
-
-							break;
+							}
 						}
+
 					}
-				break;
+				continue;
 			}
 		}
 	}
