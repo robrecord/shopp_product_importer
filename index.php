@@ -179,7 +179,14 @@ SQL;
 
 		if (($this->Shopp->Settings->get('catskin_importer_auto') == 'yes') || $this->auto_import == true) {
 			$this->log("# - Started import");
-			$csvs = $this->juggle_files();
+			if( $_GET['test_auto'] == 'import')
+			{ // test import with import directory
+				list ( $csvs, $latest_modified ) = $this->find_csvs( $this->csv_get_path );
+			}
+			else
+			{ // test import with upload directory
+				$csvs = $this->juggle_files();
+			}
 			if (!empty($csvs)) {
 			// if (list($csvs) = $this->find_csvs($this->csv_get_path)) {
 				foreach ($csvs as $filename) {

@@ -137,6 +137,7 @@
  	<?php die("Reload to repeat"); ?>
  <? else: ?>
  	<p><a href="?import=shopp_product_importer&test_auto=upload">Test auto import normally (from upload dir)</a></p>
+ 	<p><a href="?import=shopp_product_importer&test_auto=import">Test import from import dir without AJAX</a></p>
  <? endif ?>
 
 	<?php if (!empty($updated)): ?><div id="message" class="updated fade"><p><?php echo $updated; ?></p></div><?php endif; ?>
