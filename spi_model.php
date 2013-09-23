@@ -324,6 +324,11 @@ class spi_model {
 			// }
 			// var_dump($map_product);
 
+<<<<<<< Updated upstream
+=======
+
+
+>>>>>>> Stashed changes
 			// Assign categories
 			foreach ($this->edge_categories as $edge_id=>$skus) {
 				// foreach ($skus as $sku) {
@@ -332,7 +337,11 @@ class spi_model {
 					$edge_cats = array();
 					foreach( $cat_map_results as $cat_map )
 						$edge_cats[] = (int) $cat_map->category;
+<<<<<<< Updated upstream
 					wp_set_object_terms($map_product->id, $edge_cats, 'shopp_category' );
+=======
+					$result = wp_set_post_terms( (int) $map_product->id, $edge_cats, 'shopp_category' );
+>>>>>>> Stashed changes
 				}
 			}
 
@@ -365,7 +374,11 @@ class spi_model {
 		return $this->spi->result;
 	}
 
+<<<<<<< Updated upstream
 	function init_map_categories()
+=======
+	function init_map_categgories()
+>>>>>>> Stashed changes
 	{
 		global $wpdb;
 		// echo "Map EDGE Categories - TODO";

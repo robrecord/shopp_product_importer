@@ -95,7 +95,6 @@ class shopp_product_importer {
 			register_activation_hook(__FILE__,'shopp_importer_activation');
 			/* The deactivation hook is executed when the plugin is deactivated */
 			register_deactivation_hook(__FILE__,'shopp_importer_deactivation');
-			/* This function is executed when the user activates the plugin */
 
 			add_action('admin_menu', array(&$this, 'on_admin_menu'));
 			add_action('wp_ajax_upload_spi_csv_file', array(&$this, 'ajax_upload_spi_csv_file'));
@@ -456,6 +455,20 @@ SQL;
 
 	function truncate_all_prior_to_import() {
 
+<<<<<<< Updated upstream
+=======
+		global $wpdb, $Shopp;
+		$GLOBALS['wp_rewrite'] = new WP_Rewrite();
+		$Shopp->taxonomies();
+
+		// check shopp_category taxonomy exists
+		if( !taxonomy_exists( 'shopp_category' ) )
+		{
+			$this->log( "shopp_category taxanomy not registered!" );
+			die( "shopp_category taxanomy not registered!" );
+		}
+
+>>>>>>> Stashed changes
 		$this->result = array(
 			'products_imported'=>array(),
 			'products_removed'=>array(),
@@ -626,6 +639,7 @@ SQL;
 		$count_products = $model->execute();
 		if( $count_products !== 0 )
 			$model->execute_mega_query();
+<<<<<<< Updated upstream
 
 		$this->extrapolate_result($_SESSION['spi_products_filtered_img']);
 		$this->extrapolate_result($_SESSION['spi_products_filtered_cat']);
@@ -638,6 +652,20 @@ SQL;
 
 		// $edge_categories_added = extrapolate_result( $this->result['edge_categories'] );
 
+=======
+
+		$this->extrapolate_result($_SESSION['spi_products_filtered_img']);
+		$this->extrapolate_result($_SESSION['spi_products_filtered_cat']);
+		$this->extrapolate_result($_SESSION['spi_products_filtered_inv']);
+		$this->extrapolate_result($this->result['products_imported']);
+		$this->extrapolate_result($this->result['products_removed']);
+		$this->extrapolate_result($this->result['products_updated']);
+		$this->extrapolate_result($this->result['added_to_order_only']);
+		$this->extrapolate_result($this->result['remove_from_order_only']);
+
+		// $edge_categories_added = extrapolate_result( $this->result['edge_categories'] );
+
+>>>>>>> Stashed changes
 		// foreach ($this->result as &$r) $r = (int) $r;
 
 		$result = <<<HTML
@@ -906,8 +934,29 @@ HTML;
 			) . ' ' . $unit[ $i ];
 	}
 
+<<<<<<< Updated upstream
 
 
+	function spi_errors($errno, $errstr,$errfile, $errline)
+	{
+		if (dirname($errfile)==dirname(__FILE__)) {
+			$this->log("Error: [$errno] $errstr in $errfile on $errline ",0);
+		}
+	}
+
+	function report_errors() {
+		if (isset($_SESSION['spi_errors'])) {
+			echo $this->log($_SESSION['spi_errors']);
+			unset($_SESSION['spi_errors']);
+		}
+	}
+=======
+>>>>>>> Stashed changes
+
+	function send_email_report($result) {
+
+<<<<<<< Updated upstream
+=======
 	function spi_errors($errno, $errstr,$errfile, $errline)
 	{
 		if (dirname($errfile)==dirname(__FILE__)) {
@@ -924,6 +973,7 @@ HTML;
 
 	function send_email_report($result) {
 
+>>>>>>> Stashed changes
 		if ( isset($this->auto_import) && ! isset($this->auto_import_test) && ($this->Shopp->Settings->get('catskin_importer_send_email') == 'yes') ) {
 			if (!function_exists('mail')) {
 				$this->log("Message delivery not possible.");
