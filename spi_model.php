@@ -332,7 +332,7 @@ class spi_model {
 					$edge_cats = array();
 					foreach( $cat_map_results as $cat_map )
 						$edge_cats[] = (int) $cat_map->category;
-					wp_set_object_terms($map_product->id, $edge_cats, 'shopp_category' );
+					$result = wp_set_post_terms( (int) $map_product->id, $edge_cats, 'shopp_category' );
 				}
 			}
 

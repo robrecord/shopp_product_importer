@@ -95,7 +95,6 @@ class shopp_product_importer {
 			register_activation_hook(__FILE__,'shopp_importer_activation');
 			/* The deactivation hook is executed when the plugin is deactivated */
 			register_deactivation_hook(__FILE__,'shopp_importer_deactivation');
-			/* This function is executed when the user activates the plugin */
 
 			add_action('admin_menu', array(&$this, 'on_admin_menu'));
 			add_action('wp_ajax_upload_spi_csv_file', array(&$this, 'ajax_upload_spi_csv_file'));
@@ -455,6 +454,17 @@ SQL;
 	}
 
 	function truncate_all_prior_to_import() {
+
+		global $wpdb, $Shopp;
+		$GLOBALS['wp_rewrite'] = new WP_Rewrite();
+		$Shopp->taxonomies();
+
+		// check shopp_category taxonomy exists
+		if( !taxonomy_exists( 'shopp_category' ) )
+		{
+			$this->log( "shopp_category taxanomy not registered!" );
+			die( "shopp_category taxanomy not registered!" );
+		}
 
 		$this->result = array(
 			'products_imported'=>array(),
