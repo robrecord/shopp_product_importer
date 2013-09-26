@@ -183,6 +183,7 @@ SQL;
 				$csvs = $this->juggle_files();
 			}
 			if (!empty($csvs)) {
+				natcasesort( $csvs );
 			// if (list($csvs) = $this->find_csvs($this->csv_get_path)) {
 				foreach ($csvs as $filename) {
 					$this->log("> - Importing CSV $filename");
