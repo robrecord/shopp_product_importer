@@ -119,13 +119,13 @@ class shopp_product_importer {
 
 	function test_cron_import()
 	{
-		add_action('shopp_auto_import_dev', array(&$this, 'automatic_start_test'));
+		add_action('shopp_auto_import_dev', array(&$this, 'automatic_start_test_dev'));
 		wp_schedule_single_event(time()+1,'shopp_auto_import_dev');
 	}
 
 	function shopp_importer_activation()
 	{
-		SPI_WP_Timezone::set();
+		SPI_WP_Timezone::set( 'UTC' );
 		wp_schedule_event(mktime(4, 0, 0) + 86400, 'daily', 'shopp_auto_import');
 		SPI_WP_Timezone::reset();
 
@@ -152,8 +152,13 @@ SQL;
 	function shopp_importer_deactivation()
 	{
 		/* This function is executed when the user deactivates the plugin */
-	  wp_clear_scheduled_hook('shopp_auto_import');
-	  wp_clear_scheduled_hook('shopp_auto_import_dev');
+		wp_clear_scheduled_hook('shopp_auto_import');
+	}
+
+	function automatic_start_test_dev()
+	{
+		wp_clear_scheduled_hook('shopp_auto_import_dev');
+		$this->automatic_start_test();
 	}
 
 	function automatic_start_test() {
@@ -963,17 +968,23 @@ class SPI_WP_Timezone
 	public static $php_timezone;
 	public static $gmt_offset;
 
-	public static function set()
+	public static function set( $timezone )
 	{
 		// fix timezone
 		// http://wordpress.org/support/topic/using-php-timezone
 
-		// get WordPress offset in hours
-		self::$gmt_offset = get_option( 'gmt_offset' );
 		// get current PHP timezone
 		self::$php_timezone = date_default_timezone_get();
-		// set the PHP timezone to match WordPress
-		return date_default_timezone_set( 'Etc/GMT' . ( ( $gmt_offset < 0 ) ? '+' : '' ) . - $gmt_offset);
+
+		if( ! isset( $timezone ) )
+		{
+			// get WordPress offset in hours
+			self::$gmt_offset = get_option( 'gmt_offset' );
+			// set the PHP timezone to match WordPress
+			return date_default_timezone_set( 'Etc/GMT' . ( ( $gmt_offset < 0 ) ? '+' : '' ) . - $gmt_offset);
+		}
+		else
+			return date_default_timezone_set( $timezone );
 	}
 
 	public static function reset()
