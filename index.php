@@ -10,7 +10,7 @@
 	Licence: GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007
 **/
 
-ini_set('memory_limit', 256*1024*1024);
+ini_set('memory_limit', 80*1024*1024);
 error_reporting(E_ERROR | E_WARNING | E_PARSE);
 // set_error_handler('shopp_product_importer::spi_errors');
 
@@ -109,16 +109,6 @@ class shopp_product_importer {
 
 			add_filter('shopp_admin_menus', array(&$this, 'shopp_admin_menu'));
 
-			//remove before uploading to production!
-			add_action('shopp_auto_import_dev', array(&$this, 'automatic_start_test'));
-			// wp_schedule_single_event(time()+1,'shopp_auto_import_dev');
-			// end remove
-
-			// $gofs = get_option( 'gmt_offset' ); // get WordPress offset in hours
-			// $tz = date_default_timezone_get(); // get current PHP timezone
-			// date_default_timezone_set('Etc/GMT'.(($gofs < 0)?'+':'').-$gofs); // set the PHP timezone to match WordPress
-
-			// date_default_timezone_set($tz); // set the PHP timezone back the way it was
 			if (array_key_exists("test_auto", $_GET))  {
 				$this->auto_import = true;
 				$this->log("Start user-initiated auto import test");
@@ -127,17 +117,17 @@ class shopp_product_importer {
 		}
 	}
 
+	function test_cron_import()
+	{
+		add_action('shopp_auto_import_dev', array(&$this, 'automatic_start_test'));
+		wp_schedule_single_event(time()+1,'shopp_auto_import_dev');
+	}
+
 	function shopp_importer_activation()
 	{
-		// fix timezone
-		// http://wordpress.org/support/topic/using-php-timezone
-		$gofs = get_option( 'gmt_offset' ); // get WordPress offset in hours
-		$tz = date_default_timezone_get(); // get current PHP timezone
-		date_default_timezone_set('Etc/GMT'.(($gofs < 0)?'+':'').-$gofs); // set the PHP timezone to match WordPress
-
+		SPI_WP_Timezone::set();
 		wp_schedule_event(mktime(4, 0, 0) + 86400, 'daily', 'shopp_auto_import');
-		//wp_schedule_event(mktime(17, 45, 0) + 86400, 'daily', 'shopp_auto_import_dev');
-		date_default_timezone_set($tz); // set the PHP timezone back the way it was
+		SPI_WP_Timezone::reset();
 
 		global $wpdb;
 
@@ -165,6 +155,7 @@ SQL;
 	  wp_clear_scheduled_hook('shopp_auto_import');
 	  wp_clear_scheduled_hook('shopp_auto_import_dev');
 	}
+
 	function automatic_start_test() {
 		$this->auto_import_test = true;
 		$this->auto_import = true;
@@ -967,4 +958,27 @@ class shoppImporterException extends Exception
 	}
 }
 
-?>
+class SPI_WP_Timezone
+{
+	public static $php_timezone;
+	public static $gmt_offset;
+
+	public static function set()
+	{
+		// fix timezone
+		// http://wordpress.org/support/topic/using-php-timezone
+
+		// get WordPress offset in hours
+		self::$gmt_offset = get_option( 'gmt_offset' );
+		// get current PHP timezone
+		self::$php_timezone = date_default_timezone_get();
+		// set the PHP timezone to match WordPress
+		return date_default_timezone_set( 'Etc/GMT' . ( ( $gmt_offset < 0 ) ? '+' : '' ) . - $gmt_offset);
+	}
+
+	public static function reset()
+	{
+		// set the PHP timezone back the way it was
+		return date_default_timezone_set( self::$php_timezone );
+	}
+}
