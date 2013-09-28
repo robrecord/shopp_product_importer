@@ -86,15 +86,15 @@ class shopp_product_importer {
 	public $result = array();
 
 	function __construct() {
+		/* The activation hook is executed when the plugin is activated. */
+		register_activation_hook(__FILE__,'shopp_importer_activation');
+		/* The deactivation hook is executed when the plugin is deactivated */
+		register_deactivation_hook(__FILE__,'shopp_importer_deactivation');
+
 		global $Shopp;
 		if (class_exists('Shopp')) {
 			$this->Shopp = &$Shopp;
 			$this->set_paths();
-
-			/* The activation hook is executed when the plugin is activated. */
-			register_activation_hook(__FILE__,'shopp_importer_activation');
-			/* The deactivation hook is executed when the plugin is deactivated */
-			register_deactivation_hook(__FILE__,'shopp_importer_deactivation');
 
 			add_action('admin_menu', array(&$this, 'on_admin_menu'));
 			add_action('wp_ajax_upload_spi_csv_file', array(&$this, 'ajax_upload_spi_csv_file'));
@@ -125,9 +125,9 @@ class shopp_product_importer {
 
 	function shopp_importer_activation()
 	{
-		SPI_WP_Timezone::set( 'UTC' );
-		wp_schedule_event(mktime(4, 0, 0) + 86400, 'daily', 'shopp_auto_import');
-		SPI_WP_Timezone::reset();
+		// SPI_WP_Timezone::set( 'America/New York' );
+		wp_schedule_event(gmmktime(9, 3, 0), 'daily', 'shopp_auto_import');
+		// SPI_WP_Timezone::reset();
 
 		global $wpdb;
 
@@ -942,12 +942,16 @@ HTML;
 				foreach ($_SESSION['spi_errors'] as $key => $value)
 					$body .= "$key : $value\n";
 			$body .= "$result\n";
-			foreach (array('uploads@seitadiamondjewelers.com') as $to) {
-			// foreach (array('rob@robrecord.com') as $to) {
-				if (!mail($to, $subject, $body)) {
-					$this->log("Message delivery to $to failed.");
-					return false;
-				}
+			$to = $headers = array();
+			// $to[] = "Seita Uploads <uploads@seitajewelers.com>";
+			$to[] = "Rob Record <robotix@gmail.com>";
+			$headers[] = "From: Seita Jewelers Website <seita@seitajewelers.com>";
+			$headers[] = "Reply-To: Seita Uploads <uploads@seitajewelers.com>";
+			$headers[] = "Cc: Rob Record <rob@robrecord.com>";
+			$headers[] = "X-Mailer: PHP/" . phpversion();
+			if ( ! mail( implode( ', ', $to ), $subject, $body, implode( "\r\n", $headers ) ) ) {
+				$this->log( "Message delivery to $to failed." );
+				return false;
 			}
 			return true;
 		}
