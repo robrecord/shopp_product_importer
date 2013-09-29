@@ -10,7 +10,7 @@
 	Licence: GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007
 **/
 
-ini_set('memory_limit', 80*1024*1024);
+ini_set('memory_limit', 128*1024*1024);
 error_reporting(E_ERROR | E_WARNING | E_PARSE);
 // set_error_handler('shopp_product_importer::spi_errors');
 
@@ -87,9 +87,9 @@ class shopp_product_importer {
 
 	function __construct() {
 		/* The activation hook is executed when the plugin is activated. */
-		register_activation_hook( __FILE__, array( $this, 'shopp_importer_activation' ) );
+		register_activation_hook( __FILE__, array( &$this, 'shopp_importer_activation' ) );
 		/* The deactivation hook is executed when the plugin is deactivated */
-		register_deactivation_hook( __FILE__, array( $this, 'shopp_importer_deactivation') );
+		register_deactivation_hook( __FILE__, array( &$this, 'shopp_importer_deactivation') );
 
 		global $Shopp;
 		if (class_exists('Shopp')) {
@@ -112,7 +112,7 @@ class shopp_product_importer {
 			if (array_key_exists("test_auto", $_GET))  {
 				$this->auto_import = true;
 				$this->log("Start user-initiated auto import test");
-				$this->automatic_start();
+				$this->automatic_start_test();
 			}
 		}
 	}
@@ -163,18 +163,19 @@ SQL;
 
 	function automatic_start_test() {
 		$this->auto_import_test = true;
-		$this->auto_import = true;
 		$this->automatic_start();
 	}
 
 	function automatic_start()
 	{
+		$this->auto_import = true;
+
 		set_time_limit(86400);
 		set_error_handler(array(&$this, 'spi_errors'));
 
-		if (($this->Shopp->Settings->get('catskin_importer_auto') == 'yes') || $this->auto_import == true) {
+		if ( ( $this->Shopp->Settings->get('catskin_importer_auto') == 'yes') || $this->auto_import_test == true) {
 			$this->log("# - Started import");
-			if( $_GET['test_auto'] == 'import')
+			if( array_key_exists( 'test_auto', $_GET ) && ( $_GET[ 'test_auto' ] == 'import' ) )
 			{ // test import with import directory
 				list ( $csvs, $latest_modified ) = $this->find_csvs( $this->csv_get_path );
 			}
@@ -478,7 +479,7 @@ SQL;
 		$_SESSION['spi_products_to_remove'] =
 		$_SESSION['spi_products_to_add_order_only'] = array();
 
-		if ( $this->Shopp->Settings->get('catskin_importer_empty_first') == 'yes' || !$this->auto_import ) {
+		if ( $this->Shopp->Settings->get('catskin_importer_empty_first') == 'yes' ) {
 			global $wpdb;
 			while( count( $shopp_product_posts = get_posts( array(
 				'post_type'        => 'shopp_product',
@@ -873,18 +874,16 @@ HTML;
 
 	public function log($message,$level=4)
 	{
-		if( $this->Shopp->Settings->get( 'catskin_importer_debug_output' ) == 'yes' )
+		if( !$this->auto_import && $this->Shopp->Settings->get( 'catskin_importer_debug_output' ) == 'yes' )
 			echo "$message<br>\n";
 
-			$log_name = ($this->auto_import) ? 'import.log' : 'import_manual.log';
-			$log_path = "$this->csv_root/$log_name";
-			if ( is_writable($log_path) ) {
+		$log_name = ($this->auto_import) ? 'import.log' : 'import_manual.log';
+		$log_path = "$this->csv_root/$log_name";
 
-			}
-
+		// if ( is_writable($log_path) ) {
 			$message = date('Y-m-d H:i:s')." - $message  ".$this->report_memory()."\n";
 			error_log($message,3,$log_path);
-
+		// }
 		return $message;
 
 	}
