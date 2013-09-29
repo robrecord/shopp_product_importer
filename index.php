@@ -87,9 +87,9 @@ class shopp_product_importer {
 
 	function __construct() {
 		/* The activation hook is executed when the plugin is activated. */
-		register_activation_hook(__FILE__,'shopp_importer_activation');
+		register_activation_hook( __FILE__, array( $this, 'shopp_importer_activation' ) );
 		/* The deactivation hook is executed when the plugin is deactivated */
-		register_deactivation_hook(__FILE__,'shopp_importer_deactivation');
+		register_deactivation_hook( __FILE__, array( $this, 'shopp_importer_deactivation') );
 
 		global $Shopp;
 		if (class_exists('Shopp')) {
@@ -102,7 +102,7 @@ class shopp_product_importer {
 			add_action('wp_ajax_import_products', array(&$this, 'ajax_import_products'));
 			add_action('wp_ajax_import_images', array(&$this, 'ajax_import_images'));
 			add_action('wp_ajax_next_image', array(&$this, 'ajax_next_image'));
-			// $this->ajax_load_file();
+
 			add_action( 'init', array(&$this, 'register_edge_categories'));
 			add_action('shopp_init', array(&$this, 'shopp_init'));
 			add_action('shopp_auto_import', array(&$this, 'automatic_start'));
@@ -125,9 +125,9 @@ class shopp_product_importer {
 
 	function shopp_importer_activation()
 	{
-		// SPI_WP_Timezone::set( 'America/New York' );
-		wp_schedule_event(gmmktime(9, 3, 0), 'daily', 'shopp_auto_import');
-		// SPI_WP_Timezone::reset();
+		$timestamp = ( new DateTime( '04:30-0400' ) )->setTimezone( new DateTimeZone( 'UTC' ) )
+				->getTimestamp();
+		wp_schedule_event( $timestamp, 'daily', 'shopp_auto_import' );
 
 		global $wpdb;
 
@@ -996,5 +996,11 @@ class SPI_WP_Timezone
 	{
 		// set the PHP timezone back the way it was
 		return date_default_timezone_set( self::$php_timezone );
+	}
+
+	public static function to_timezone( $time, $timezone = 'UTC' )
+	{
+		$date = new DateTime( $time, $timezone );
+		return $date;
 	}
 }
