@@ -936,14 +936,14 @@ HTML;
 				return false;
 			}
 			$subject = "***** Report for product upload to Seita Diamond Jewelers site";
-			$body = 'An upload occurred at '.date('g.ia')." today.\n\nHere are the results:\n\n";
+			$body = 'An upload occurred at '.date( 'g.ia', current_time( 'timestamp' ) )." today.\n\nHere are the results:\n\n";
 			if (isset($_SESSION['spi_errors']))
 				foreach ($_SESSION['spi_errors'] as $key => $value)
 					$body .= "$key : $value\n";
 			$body .= "$result\n";
 			$to = $headers = array();
-			// $to[] = "Seita Uploads <uploads@seitajewelers.com>";
-			$to[] = "Rob Record <robotix@gmail.com>";
+			$to[] = "Seita Uploads <uploads@seitajewelers.com>";
+			// $to[] = "Rob Record <robotix@gmail.com>";
 			$headers[] = "From: Seita Jewelers Website <seita@seitajewelers.com>";
 			$headers[] = "Reply-To: Seita Uploads <uploads@seitajewelers.com>";
 			$headers[] = "Cc: Rob Record <rob@robrecord.com>";
