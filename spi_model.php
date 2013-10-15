@@ -844,7 +844,6 @@ SQL;
 							switch ($status) {
 								case 'S':	// S    Sold
 								case 'L':	// L    Layaway
-								case 'O':	// O 	Special order
 
 								// if the product isn't yet in the database, but is out of stock (can be reordered), check if we want to add it to the order only table. in which case we have to add the product to the database, not filter it.
 								if( !$id && $this->check_order_only( $sku ) )
@@ -856,6 +855,7 @@ SQL;
 									break;
 								}
 
+								case 'O':	// O 	Special order
 								case 'X':	// X    Scrapped
 								case '-':	// -	Deleted
 								case 'V':	// V    Returned to vendor
